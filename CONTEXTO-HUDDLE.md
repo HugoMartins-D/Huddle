@@ -248,7 +248,7 @@ Não há dados de exemplo. Pessoas, reuniões, decisões, tarefas, jogos e núme
   - A lousa tem campo de futebol americano/flag, futebol, quadra ou em branco; jogadores do time e adversários; rotas contínuas, tracejadas ou de bloqueio; texto, cores, desfazer e refazer.
   - Cada jogada pode ser publicada para grupos específicos.
   - O atleta só consulta.
-- **Protótipo antigo** (exportado do Figma): guardado em `prototipo-figma/`, fora do build.
+- **Protótipo antigo** (exportado do Figma): removido do repositório em 2026-10-21; continua no histórico do git (commits até `20ebd32`).
 - **Rodar local:** use `iniciar-local.ps1`. Se estiver numa pasta de rede, ele mapeia a unidade Y: sozinho; depois abre o LiveKit em modo de desenvolvimento (`%LOCALAPPDATA%\livekit\livekit-server.exe`, chave `devkey`/`secret`), a API (`server/index.ts`, Node 22.18+) e o app em http://127.0.0.1:5174/. No Mac: `pnpm api` num terminal e `pnpm dev` em outro. O banco de teste fica em `~/.huddle-dados` (SQLite não pode ficar em pasta de rede).
 - **No servidor (ZimaOS):**
   - `server/docker-compose.yml` sobe a API e o LiveKit. O Tailscale Funnel publica a API na porta 8443 (com `/rtc` do LiveKit) e o TURN do LiveKit na 10000; a 443 segue com o Lead Generator.
