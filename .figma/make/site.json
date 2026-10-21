@@ -1,8 +1,8 @@
 {
-  "title": "HUDDLE · Alinhar rápido. Jogar junto.",
+  "title": "HUDDLE.",
   "description": "Plataforma para times de flag football: reuniões ao vivo com vídeo, resumos com confirmação de leitura, tarefas, gravações e playbook tático em um só lugar.",
   "language": "pt-BR",
-  "favicon": "/favicon.png",
+  "favicon": "/favicon.svg",
   "robots": {
     "index": false
   },
