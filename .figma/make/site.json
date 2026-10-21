@@ -3,7 +3,7 @@
   "description": "Plataforma para times de flag football: reuniões ao vivo com vídeo, resumos com confirmação de leitura, tarefas, gravações e playbook tático em um só lugar.",
   "language": "pt-BR",
   "icons": {
-    "icon": "/favicon.svg"
+    "icon": "/favicon.svg?v=2"
   },
   "robots": {
     "index": false

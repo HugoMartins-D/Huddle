@@ -107,7 +107,8 @@ export default function App() {
   const section = segments[0] ?? "";
 
   useEffect(() => {
-    document.title = team ? `${team.name} · HUDDLE` : "HUDDLE";
+    // "Almirantes · HUDDLE"; sem repetir quando o time também se chama HUDDLE
+    document.title = team && team.name.trim().toUpperCase() !== "HUDDLE" ? `${team.name} · HUDDLE` : "HUDDLE";
     applyTeamColor(team?.color);
   }, [team?.name, team?.color]);
 
