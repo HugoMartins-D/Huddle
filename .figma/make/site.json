@@ -1,0 +1,10 @@
+{
+  "description": "This web application offers a seamless navigation experience through multiple screens, designed for users seeking efficient access to various functionalities.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

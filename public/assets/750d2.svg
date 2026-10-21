@@ -1,0 +1,15 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="icon/notep" clip-path="url(#clip0_0_31)">
+<path id="Vector" d="M7.81667 1.16667H3.5C3.19058 1.16667 2.89383 1.28958 2.67504 1.50838C2.45625 1.72717 2.33333 2.02391 2.33333 2.33333V11.6667C2.33333 11.9761 2.45625 12.2728 2.67504 12.4916C2.89383 12.7104 3.19058 12.8333 3.5 12.8333H10.5C10.8094 12.8333 11.1062 12.7104 11.325 12.4916C11.5438 12.2728 11.6667 11.9761 11.6667 11.6667V7.35" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke="#6B7570"/>
+<path id="Vector_2" d="M1.16667 3.5H3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke="#6B7570"/>
+<path id="Vector_3" d="M1.16667 5.83333H3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke="#6B7570"/>
+<path id="Vector_4" d="M1.16667 8.16667H3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke="#6B7570"/>
+<path id="Vector_5" d="M1.16667 10.5H3.5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke="#6B7570"/>
+<path id="Vector_6" d="M12.4705 3.28183C12.7029 3.04946 12.8334 2.73429 12.8334 2.40567C12.8334 2.07704 12.7029 1.76187 12.4705 1.5295C12.2381 1.29713 11.923 1.16658 11.5943 1.16658C11.2657 1.16658 10.9505 1.29713 10.7182 1.5295L7.79567 4.45317C7.65698 4.59178 7.55546 4.76311 7.5005 4.95133L7.01225 6.6255C6.99761 6.67569 6.99673 6.7289 7.00971 6.77955C7.02269 6.8302 7.04904 6.87643 7.08601 6.91341C7.12298 6.95038 7.16921 6.97673 7.21986 6.98971C7.27051 7.00268 7.32372 7.00181 7.37392 6.98717L9.04808 6.49892C9.2363 6.44395 9.40764 6.34244 9.54625 6.20375L12.4705 3.28183Z" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke="#6B7570"/>
+</g>
+<defs>
+<clipPath id="clip0_0_31">
+<rect width="14" height="14" fill="white"/>
+</clipPath>
+</defs>
+</svg>

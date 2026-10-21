@@ -1,0 +1,1315 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Inter:Black Italic";
+  src: url("https://static.figma.com/font/Inter_1") format("woff2");
+  font-style: italic;
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: "Inter:Bold";
+  src: url("https://static.figma.com/font/Inter_1") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Inter:Regular";
+  src: url("https://static.figma.com/font/Inter_1") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Inter:Extra Bold";
+  src: url("https://static.figma.com/font/Inter_1") format("woff2");
+  font-style: normal;
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: "Inter:Medium";
+  src: url("https://static.figma.com/font/Inter_1") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Inter:Semi Bold";
+  src: url("https://static.figma.com/font/Inter_1") format("woff2");
+  font-style: normal;
+  font-weight: 600;
+}
+
+:root {
+  color: #f2f4f5;
+  background: #070b14;
+  font-family: "Inter:Regular", Arial, sans-serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100dvh;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(400px, 44.45%) 1fr;
+  min-height: 100dvh;
+  background: #070b14;
+}
+
+.brand-panel {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  justify-content: center;
+  gap: 32px;
+  padding: 64px;
+  background: #0f1725;
+}
+
+.brand-name,
+.brand-panel h2 {
+  font-family: "Inter:Black Italic", Arial, sans-serif;
+  font-style: italic;
+  font-weight: 900;
+}
+
+.brand-name {
+  color: #f5b83d;
+  font-size: 38px;
+  line-height: 1.4;
+}
+
+.brand-panel h2 {
+  margin: 0;
+  font-size: clamp(42px, 4.3vw, 62px);
+  line-height: 1.4;
+}
+
+.brand-panel p {
+  margin: 0;
+  color: #a4adba;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.brand-panel small {
+  color: #a4adba;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.simple-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+}
+
+.simple-form {
+  display: flex;
+  width: min(480px, 100%);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.area-label {
+  color: #f5b83d;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.simple-form h1 {
+  margin: 0;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.description {
+  margin: 0;
+  color: #a4adba;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.flow-form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 8px;
+  color: #a4adba;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.field input {
+  width: 100%;
+  height: 52px;
+  border: 0;
+  border-radius: 10px;
+  outline: none;
+  padding: 16px;
+  color: #f2f4f5;
+  background: #0f1725;
+  font-family: "Inter:Regular", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.field input::placeholder {
+  color: #f2f4f5;
+  opacity: 1;
+}
+
+.team-card {
+  display: flex;
+  min-height: 74px;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #111c17;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.team-card img {
+  width: 44px;
+  height: 44px;
+}
+
+.terms {
+  margin: 0;
+  color: #a4adba;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.primary-button {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  color: #070b14;
+  background: #f5b83d;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.primary-button:hover,
+.login-primary:hover {
+  background: #ffc952;
+}
+
+.text-link {
+  border: 0;
+  padding: 0;
+  color: #a4adba;
+  background: transparent;
+  font-size: 13px;
+}
+
+.login-brand {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.field-art,
+.brand-gradient {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.field-art {
+  object-fit: cover;
+}
+
+.brand-gradient {
+  background: linear-gradient(to bottom, transparent 40%, rgba(7, 11, 20, 0.9));
+}
+
+.brand-lockup {
+  position: absolute;
+  top: 5%;
+  left: 7.5%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-lockup > img {
+  width: 48px;
+  height: 48px;
+}
+
+.brand-lockup div {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-lockup strong {
+  font-family: "Inter:Black Italic", Arial, sans-serif;
+  font-size: 20px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.brand-lockup span {
+  color: #8a9099;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.76px;
+}
+
+.login-pitch {
+  position: absolute;
+  left: 7.5%;
+  bottom: 8.5%;
+  width: 85%;
+}
+
+.eyebrow {
+  color: #f5b83d;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.44px;
+}
+
+.login-pitch h2 {
+  margin: 18px 0 14px;
+  font-family: "Inter:Black Italic", Arial, sans-serif;
+  font-size: clamp(38px, 3.2vw, 46px);
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -1.38px;
+  line-height: 1.02;
+}
+
+.login-pitch > p {
+  width: min(430px, 100%);
+  margin: 0;
+  color: #a9b0bd;
+  font-size: 15px;
+  line-height: 24px;
+}
+
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding-top: 32px;
+}
+
+.features span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #c9ced4;
+  font-size: 13px;
+}
+
+.features img {
+  width: 16px;
+  height: 16px;
+}
+
+.login-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 48px;
+  border-left: 1px solid #1c2840;
+  background: #0a101c;
+}
+
+.login-form {
+  width: min(420px, 100%);
+}
+
+.area-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f5b83d;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.44px;
+}
+
+.area-heading img {
+  width: 14px;
+  height: 14px;
+}
+
+.login-form h1 {
+  margin: 10px 0 8px;
+  font-family: "Inter:Black Italic", Arial, sans-serif;
+  font-size: 32px;
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -0.64px;
+}
+
+.login-description {
+  margin: 0 0 32px;
+  color: #8a9099;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #b7bdc4;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.login-field > div {
+  display: flex;
+  height: 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid #24324d;
+  border-radius: 12px;
+  background: #0f1725;
+}
+
+.login-field.active > div {
+  border-color: #f5b83d;
+  box-shadow: 0 0 0 4px rgba(67, 162, 122, 0.13);
+}
+
+.login-field img {
+  width: 18px;
+  height: 18px;
+}
+
+.login-field input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: none;
+  color: #f2f4f5;
+  background: transparent;
+  font-family: "Inter:Regular", Arial, sans-serif;
+  font-size: 14px;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 28px;
+  color: #b7bdc4;
+  font-size: 13px;
+}
+
+.login-options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 5px;
+  background: #f5b83d;
+}
+
+.checkbox img {
+  width: 12px;
+  height: 12px;
+}
+
+.login-options button {
+  border: 0;
+  color: #f5b83d;
+  background: transparent;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-primary,
+.invite-button {
+  display: flex;
+  width: 100%;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+}
+
+.login-primary {
+  border: 0;
+  color: #070b14;
+  background: #f5b83d;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.login-primary img,
+.invite-button img {
+  width: 18px;
+  height: 18px;
+}
+
+.divider {
+  display: flex;
+  height: 71px;
+  align-items: center;
+  gap: 12px;
+  color: #5c6578;
+  font-size: 12px;
+}
+
+.divider span {
+  height: 2px;
+  flex: 1;
+  border-radius: 2px;
+  background: #1c2840;
+}
+
+.invite-button {
+  border: 1px solid #2a3956;
+  color: #f2f4f5;
+  background: #16213a;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.info-card {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 14px 16px;
+  border: 1px solid #1c2840;
+  border-radius: 14px;
+  color: #9aa1aa;
+  background: #0f1725;
+  font-size: 12px;
+  line-height: 18.6px;
+}
+
+.info-card > img {
+  width: 18px;
+  height: 18px;
+}
+
+.info-card p {
+  margin: 0;
+}
+
+.info-card strong {
+  color: #f2f4f5;
+  font-family: "Inter:Bold", Arial, sans-serif;
+}
+
+.register {
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  margin: 28px 0 0;
+  color: #8a9099;
+  text-align: center;
+  font-size: 13px;
+}
+
+/* Commission area uses the exact generated Figma canvases and scales them
+   down at narrower breakpoints while retaining their original geometry. */
+.commission-shell {
+  min-height: 100dvh;
+  overflow: hidden;
+  background: #06100c;
+}
+
+.commission-canvas {
+  --commission-scale: 1;
+  position: relative;
+  width: 100%;
+  min-height: 960px;
+  overflow: auto;
+}
+
+.commission-frame {
+  width: 1440px;
+  height: 960px;
+  transform: scale(var(--commission-scale));
+  transform-origin: top left;
+}
+
+.commission-screen-picker {
+  position: fixed;
+  z-index: 50;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border: 1px solid #244a3b;
+  border-radius: 10px;
+  color: #91a89f;
+  background: rgba(10, 24, 18, 0.94);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.38);
+  font-family: "Inter:Medium", Arial, sans-serif;
+  font-size: 11px;
+  backdrop-filter: blur(10px);
+}
+
+.commission-screen-picker select {
+  max-width: 220px;
+  border: 0;
+  outline: none;
+  color: #f2f4f5;
+  background: transparent;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.commission-screen-picker option {
+  color: #f2f4f5;
+  background: #0d1a15;
+}
+
+@media (max-width: 1439px) {
+  .commission-canvas {
+    --commission-scale: 0.6944;
+    min-height: 667px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .commission-canvas {
+    --commission-scale: 0.4861;
+    min-height: 467px;
+  }
+}
+
+@media (max-width: 700px) {
+  .commission-canvas {
+    --commission-scale: 0.2777;
+    min-height: 267px;
+  }
+
+  .commission-screen-picker {
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
+.register strong {
+  color: #f5b83d;
+  font-family: "Inter:Bold", Arial, sans-serif;
+}
+
+.screen-nav {
+  position: fixed;
+  z-index: 10;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  gap: 5px;
+  padding: 6px;
+  border: 1px solid #26334a;
+  border-radius: 999px;
+  background: rgba(10, 16, 28, 0.9);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
+
+.screen-nav button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  color: #8a9099;
+  background: transparent;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 11px;
+}
+
+.screen-nav button:hover {
+  color: #f2f4f5;
+  background: #1c2840;
+}
+
+.screen-nav button.selected {
+  color: #070b14;
+  background: #f5b83d;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-panel,
+  .login-brand {
+    display: none;
+  }
+
+  .simple-main,
+  .login-main {
+    min-height: 100dvh;
+    padding: 48px 24px 86px;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  .simple-main,
+  .brand-panel,
+  .login-main {
+    padding-top: 32px;
+    padding-bottom: 64px;
+  }
+
+  .simple-form {
+    gap: 14px;
+  }
+
+  .flow-form {
+    gap: 14px;
+  }
+
+  .brand-panel {
+    gap: 18px;
+  }
+
+  .brand-panel h2 {
+    font-size: 48px;
+  }
+
+  .login-main {
+    overflow-y: auto;
+  }
+
+  .login-form {
+    transform: scale(0.86);
+  }
+}
+
+/* Athlete area */
+.athlete-shell {
+  --athlete-bg: #08100d;
+  --athlete-surface: #111c17;
+  --athlete-green: #56b88f;
+  --athlete-muted: #a2b4aa;
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 100dvh;
+  color: #f2f4f5;
+  background: var(--athlete-bg);
+}
+
+.athlete-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  height: 100dvh;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 20px;
+  background: var(--athlete-surface);
+}
+
+.team-lockup {
+  display: flex;
+  height: 56px;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-lockup img {
+  width: 40px;
+  height: 40px;
+}
+
+.team-lockup div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.team-lockup strong {
+  font-family: "Inter:Black Italic", Arial, sans-serif;
+  font-size: 15px;
+  font-style: italic;
+}
+
+.team-lockup span,
+.sidebar-label,
+.athlete-identity small {
+  color: var(--athlete-muted);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 10px;
+}
+
+.athlete-sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.athlete-sidebar nav button {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 12px;
+  color: var(--athlete-muted);
+  background: transparent;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+  text-align: left;
+}
+
+.athlete-sidebar nav button:hover,
+.athlete-sidebar nav button.active {
+  color: var(--athlete-green);
+  background: #243c30;
+}
+
+.athlete-identity {
+  display: flex;
+  margin-top: auto;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--athlete-muted);
+  font-size: 12px;
+}
+
+.athlete-identity strong {
+  color: #f2f4f5;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 14px;
+}
+
+.athlete-page {
+  min-width: 0;
+}
+
+.athlete-header {
+  display: flex;
+  min-height: 104px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+}
+
+.athlete-header h1 {
+  margin: 0 0 4px;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.athlete-header p {
+  margin: 0;
+  color: var(--athlete-muted);
+  font-size: 13px;
+}
+
+.athlete-header > span {
+  width: 230px;
+  color: var(--athlete-green);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.athlete-content {
+  padding: 32px;
+}
+
+.athlete-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 740px) minmax(280px, 372px);
+  gap: 32px;
+}
+
+.athlete-main-column,
+.athlete-side-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.athlete-main-column h2,
+.athlete-main-column h3,
+.athlete-side-column h3 {
+  margin: 0;
+  font-family: "Inter:Bold", Arial, sans-serif;
+}
+
+.athlete-main-column h3,
+.athlete-side-column h3 {
+  font-size: 20px;
+}
+
+.athlete-card {
+  display: flex;
+  width: 100%;
+  min-height: 106px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  padding: 16px;
+  color: #f2f4f5;
+  background: var(--athlete-surface);
+  text-align: left;
+  white-space: pre-line;
+}
+
+button.athlete-card:hover {
+  border-color: #365848;
+  background: #15231c;
+}
+
+.athlete-card.outlined {
+  border-color: var(--athlete-green);
+}
+
+.athlete-card span,
+.green-kicker {
+  color: var(--athlete-green);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+}
+
+.athlete-card strong {
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 18px;
+}
+
+.athlete-card p {
+  margin: 0;
+  color: var(--athlete-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.athlete-action {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 18px;
+  color: #f2f4f5;
+  background: var(--athlete-surface);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.athlete-action:hover {
+  background: #1a2b22;
+}
+
+.athlete-action.primary {
+  max-width: 300px;
+  color: var(--athlete-bg);
+  background: var(--athlete-green);
+}
+
+.athlete-action.primary:hover {
+  background: #70cba5;
+}
+
+.hero-meeting {
+  display: flex;
+  min-height: 296px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 20px;
+  border-radius: 14px;
+  padding: 28px;
+  background: var(--athlete-surface);
+}
+
+.hero-meeting > span {
+  color: var(--athlete-green);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.hero-meeting h2 {
+  margin: 0;
+  font-family: "Inter:Black Italic", Arial, sans-serif;
+  font-size: 36px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.hero-meeting p,
+.body-copy {
+  margin: 0;
+  color: var(--athlete-muted);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.helper {
+  margin: 0;
+  color: var(--athlete-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.helper.large {
+  font-size: 14px;
+}
+
+.tabs,
+.player-line {
+  color: var(--athlete-green);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 21px;
+}
+
+.confirmation-panel {
+  display: flex;
+  min-height: 341px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  border-radius: 14px;
+  padding: 64px;
+  background: var(--athlete-surface);
+}
+
+.confirmation-panel > span {
+  color: var(--athlete-green);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 13px;
+}
+
+.confirmation-panel h2 {
+  margin: 0;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 36px;
+  line-height: 1.4;
+}
+
+.confirmation-panel p {
+  margin: 0;
+  color: var(--athlete-muted);
+  font-size: 18px;
+}
+
+.content-title {
+  font-size: 28px;
+  line-height: 1.4;
+}
+
+.camera-preview {
+  display: flex;
+  min-height: 390px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  border-radius: 14px;
+  background: var(--athlete-surface);
+}
+
+.camera-preview strong {
+  color: var(--athlete-green);
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 80px;
+}
+
+.camera-preview span {
+  color: var(--athlete-muted);
+  font-size: 17px;
+}
+
+.media-actions,
+.four-actions,
+.form-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.four-actions .athlete-action {
+  flex: 1;
+}
+
+.play-board {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  line-height: 0;
+}
+
+.play-board img {
+  display: block;
+}
+
+.athlete-field {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--athlete-muted);
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.athlete-field input {
+  width: 100%;
+  height: 53px;
+  border: 0;
+  border-radius: 14px;
+  outline: none;
+  padding: 16px;
+  color: #f2f4f5;
+  background: var(--athlete-surface);
+  font-family: "Inter:Regular", Arial, sans-serif;
+  font-size: 15px;
+}
+
+.athlete-field input::placeholder {
+  color: #f2f4f5;
+  opacity: 1;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px 20px;
+  margin: 24px 0;
+}
+
+.detail-title {
+  margin: 0;
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 32px;
+}
+
+.profile-card {
+  display: flex;
+  min-height: 346px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 18px;
+  border-radius: 14px;
+  padding: 32px;
+  background: var(--athlete-surface);
+}
+
+.profile-avatar {
+  color: var(--athlete-green);
+  font-family: "Inter:Bold", Arial, sans-serif;
+  font-size: 56px;
+}
+
+.profile-card h2 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.profile-card b {
+  color: var(--athlete-muted);
+  font-size: 14px;
+}
+
+.profile-card p {
+  margin: 0;
+  color: var(--athlete-muted);
+  font-size: 16px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.athlete-screen-picker {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid #365848;
+  border-radius: 10px;
+  color: var(--athlete-muted);
+  background: rgba(17, 28, 23, 0.94);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  font-size: 11px;
+  backdrop-filter: blur(10px);
+}
+
+.athlete-screen-picker select {
+  max-width: 190px;
+  border: 0;
+  outline: none;
+  color: #f2f4f5;
+  background: transparent;
+  font-family: "Inter:Semi Bold", Arial, sans-serif;
+  font-size: 12px;
+}
+
+.athlete-screen-picker option {
+  color: #f2f4f5;
+  background: var(--athlete-surface);
+}
+
+@media (max-width: 1000px) {
+  .athlete-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .athlete-side-column {
+    border-top: 1px solid #243c30;
+    padding-top: 24px;
+  }
+
+  .library-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .athlete-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .athlete-sidebar {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: auto;
+    padding: 16px;
+  }
+
+  .athlete-sidebar nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .athlete-sidebar nav button {
+    height: 38px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .sidebar-label,
+  .athlete-identity {
+    display: none;
+  }
+
+  .team-lockup {
+    height: 44px;
+  }
+
+  .athlete-header {
+    min-height: 90px;
+    padding: 18px 20px;
+  }
+
+  .athlete-header h1 {
+    font-size: 24px;
+  }
+
+  .athlete-header > span {
+    display: none;
+  }
+
+  .athlete-content {
+    padding: 20px 20px 90px;
+  }
+
+  .hero-meeting h2 {
+    font-size: 29px;
+  }
+
+  .confirmation-panel {
+    min-height: auto;
+    padding: 32px 24px;
+  }
+
+  .confirmation-panel h2 {
+    font-size: 30px;
+  }
+
+  .library-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .media-actions,
+  .four-actions,
+  .form-buttons {
+    flex-wrap: wrap;
+  }
+
+  .play-board {
+    overflow-x: auto;
+  }
+}

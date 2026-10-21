@@ -1,0 +1,107 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400..900;1,700..900&display=swap");
+@import "tailwindcss";
+
+/*
+ * Tema das telas internas: a cor de destaque vem do time cadastrado (--accent,
+ * definida em runtime). Fundos e bordas misturam um pouco dessa cor ao preto,
+ * então o tema acompanha qualquer cor escolhida no cadastro.
+ */
+:root {
+  --accent: #43a27a;
+  --on-accent: #06110c;
+  --bg: color-mix(in oklab, var(--accent) 5%, #050807);
+  --surface: color-mix(in oklab, var(--accent) 7%, #090d0b);
+  --surface-2: color-mix(in oklab, var(--accent) 9%, #0c110f);
+  --surface-3: color-mix(in oklab, var(--accent) 15%, #101613);
+  --line: color-mix(in oklab, var(--accent) 14%, #141a17);
+  --line-2: color-mix(in oklab, var(--accent) 22%, #1b231f);
+  color-scheme: dark;
+}
+
+/* Telas de acesso: marca HUDDLE, independente da cor do time */
+.hud {
+  --accent: #f5b83d;
+  --on-accent: #0a101c;
+  --surface: #0f1725;
+  --surface-2: #121c2d;
+  --surface-3: #18243a;
+  --line: #1c2738;
+  --line-2: #26344c;
+}
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: #f2f4f5;
+  --color-muted: #9aa6a0;
+  --color-danger: #e5484d;
+  --color-warn: #f5a524;
+  /* Telas de acesso (marca HUDDLE) */
+  --color-hud-bg: #0a101c;
+  --color-hud-surface: #0f1725;
+  --color-hud-line: #1c2738;
+  --color-hud-gold: #f5b83d;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #f2f4f5;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 h-11 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap;
+  }
+  .btn-sm {
+    @apply h-9 px-3 text-[13px] rounded-lg;
+  }
+  .btn-primary {
+    @apply bg-accent text-on-accent hover:brightness-110;
+  }
+  .btn-secondary {
+    @apply bg-surface-3 text-ink border border-line-2 hover:border-accent/60;
+  }
+  .btn-ghost {
+    @apply text-muted hover:text-ink hover:bg-surface-3;
+  }
+  .btn-danger {
+    @apply bg-danger/15 text-danger border border-danger/30 hover:bg-danger/25;
+  }
+  .input {
+    @apply w-full h-11 rounded-xl bg-surface-2 border border-line-2 px-3.5 text-sm text-ink placeholder:text-muted/70 outline-none focus:border-accent transition-colors;
+  }
+  textarea.input {
+    @apply h-auto py-3 leading-relaxed;
+  }
+  .card {
+    @apply rounded-2xl bg-surface border border-line;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 h-6 text-[11px] font-semibold;
+  }
+  .label {
+    @apply block text-xs font-semibold text-ink mb-2;
+  }
+  .eyebrow {
+    @apply text-[11px] font-bold tracking-[0.08em] uppercase text-muted;
+  }
+  .display {
+    @apply font-black italic tracking-tight;
+  }
+}

@@ -1,0 +1,39 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="640" height="960" viewBox="0 0 640 960" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon" clip-path="url(#clip0_0_48)">
+<path id="Vector" d="M640 0H0V960H640V0Z" fill="#0C1424"/>
+<path id="Vector_2" d="M640 0H0V80H640V0Z" fill="#0F1A2D"/>
+<path id="Vector_3" d="M640 160H0V240H640V160Z" fill="#0F1A2D"/>
+<path id="Vector_4" d="M640 320H0V400H640V320Z" fill="#0F1A2D"/>
+<path id="Vector_5" d="M640 480H0V560H640V480Z" fill="#0F1A2D"/>
+<path id="Vector_6" d="M640 640H0V720H640V640Z" fill="#0F1A2D"/>
+<path id="Vector_7" d="M640 800H0V880H640V800Z" fill="#0F1A2D"/>
+<path id="Vector_8" d="M0 80H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_9" d="M0 160H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_10" d="M0 240H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_11" d="M0 320H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_12" d="M0 400H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_13" d="M0 480H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_14" d="M0 560H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_15" d="M0 640H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_16" d="M0 720H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_17" d="M0 800H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_18" d="M0 880H640" stroke-width="2" stroke="white" stroke-opacity="0.08"/>
+<path id="Vector_19" opacity="0.75" d="M180 420C181.735 420 183.452 419.952 185.151 419.857M480 220C478.319 220.42 476.651 220.854 474.995 221.3M193.282 419.034C196.682 418.534 200.015 417.845 203.291 416.979M211.097 414.552C214.294 413.408 217.438 412.097 220.539 410.632M227.807 406.882C230.75 405.236 233.658 403.455 236.539 401.551M243.245 396.869C245.957 394.878 248.649 392.783 251.328 390.595M257.577 385.311C260.111 383.097 262.639 380.806 265.165 378.447M271.094 372.79C273.51 370.439 275.929 368.032 278.356 365.577M284.089 359.707C286.434 357.281 288.789 354.817 291.16 352.32M296.774 346.385C299.093 343.925 301.43 341.44 303.789 338.935M309.413 332.976C311.743 330.515 314.096 328.041 316.476 325.559M322.159 319.674C324.522 317.247 326.913 314.817 329.336 312.388M335.154 306.627C337.581 304.254 340.04 301.886 342.536 299.53M348.532 293.959C351.035 291.671 353.575 289.397 356.155 287.143M362.374 281.815C364.975 279.631 367.618 277.469 370.305 275.333M376.762 270.319C379.464 268.27 382.21 266.251 385.003 264.263M391.744 259.597C394.557 257.702 397.417 255.843 400.327 254.022M407.309 249.786C410.231 248.069 413.202 246.391 416.226 244.757M423.492 240.967C426.509 239.448 429.577 237.974 432.698 236.547M440.205 233.249C443.323 231.936 446.492 230.67 449.714 229.454M457.387 226.69C460.589 225.59 463.843 224.54 467.15 223.542" stroke-width="4" stroke="#F5B83D"/>
+<path id="Vector_20" opacity="0.75" d="M468 210L486 218L474 233" stroke-width="4" stroke="#F5B83D"/>
+<path id="Vector_21" opacity="0.9" d="M180 436C188.837 436 196 428.837 196 420C196 411.163 188.837 404 180 404C171.163 404 164 411.163 164 420C164 428.837 171.163 436 180 436Z" fill="#0C1424" stroke-width="4" stroke="#F5B83D"/>
+<path id="Vector_22" opacity="0.3" d="M180 340H340L410 270" stroke-width="3" stroke="white"/>
+<path id="Vector_23" opacity="0.45" d="M180 354C187.732 354 194 347.732 194 340C194 332.268 187.732 326 180 326C172.268 326 166 332.268 166 340C166 347.732 172.268 354 180 354Z" fill="#0C1424" stroke-width="3" stroke="white"/>
+<path id="Vector_24" opacity="0.3" d="M120 394C127.732 394 134 387.732 134 380C134 372.268 127.732 366 120 366C112.268 366 106 372.268 106 380C106 387.732 112.268 394 120 394Z" fill="#0C1424" stroke-width="3" stroke="white"/>
+<g id="Group" opacity="0.55">
+<path id="Vector_25" d="M330 300L350 320" stroke-width="4" stroke="#E5484D"/>
+<path id="Vector_26" d="M350 300L330 320" stroke-width="4" stroke="#E5484D"/>
+<path id="Vector_27" d="M410 380L430 400" stroke-width="4" stroke="#E5484D"/>
+<path id="Vector_28" d="M430 380L410 400" stroke-width="4" stroke="#E5484D"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_48">
+<rect width="640" height="960" fill="white"/>
+</clipPath>
+</defs>
+</svg>
