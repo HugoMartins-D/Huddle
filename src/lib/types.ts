@@ -123,7 +123,9 @@ export type FieldKind = "gridiron" | "soccer" | "court" | "blank";
 export type BoardElement =
   | { id: string; kind: "player"; x: number; y: number; side: "a" | "b"; label: string; color: string }
   | { id: string; kind: "route"; points: [number, number][]; color: string; style: "solid" | "dashed" | "block" }
-  | { id: string; kind: "text"; x: number; y: number; text: string; color: string };
+  | { id: string; kind: "text"; x: number; y: number; text: string; color: string }
+  /** Bola de flag football — no máximo uma por jogada. */
+  | { id: string; kind: "ball"; x: number; y: number };
 
 export type Play = {
   id: string;

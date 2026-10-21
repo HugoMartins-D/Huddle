@@ -1,4 +1,4 @@
-import { PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
+import { ComponentType, PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 import {
   BookOpen,
   Check,
@@ -14,7 +14,7 @@ import {
   Undo2,
   Upload,
 } from "lucide-react";
-import { BOARD_COLORS, BOARD_H, BOARD_W, BoardSvg, FIELDS, routePath } from "../components/Board";
+import { BallIcon, BOARD_COLORS, BOARD_H, BOARD_W, BoardSvg, FIELDS, QB_COLOR, routePath } from "../components/Board";
 import { Badge, Button, Card, Empty, ErrorText, Field, PageHeader, Segmented, useAction } from "../components/ui";
 import { fmtDateTime } from "../lib/format";
 import { Link, go } from "../lib/router";
@@ -22,13 +22,14 @@ import { memberName, visiblePlays } from "../lib/selectors";
 import { api } from "../lib/store";
 import type { BoardElement, Data, FieldKind, Member, Play, Team } from "../lib/types";
 
-type Tool = "select" | "player-a" | "player-b" | "route" | "text";
+type Tool = "select" | "player-a" | "player-b" | "ball" | "route" | "text";
 type RouteStyle = "solid" | "dashed" | "block";
 
-const TOOLS: { value: Tool; label: string; icon: typeof Circle }[] = [
+const TOOLS: { value: Tool; label: string; icon: ComponentType<{ size?: number; strokeWidth?: number }> }[] = [
   { value: "select", label: "Mover", icon: MousePointer2 },
   { value: "player-a", label: "Jogador (time)", icon: CircleDot },
   { value: "player-b", label: "Jogador (adversário)", icon: Circle },
+  { value: "ball", label: "Bola", icon: BallIcon },
   { value: "route", label: "Rota", icon: Spline },
   { value: "text", label: "Texto", icon: Type },
 ];
@@ -105,9 +106,17 @@ export function BoardEditor({ team, play }: { team: Team; play?: Play }) {
     if (tool === "select") return setSelectedId(null);
     if (tool === "player-a" || tool === "player-b") {
       const side = tool === "player-a" ? "a" : "b";
-      const count = elements.filter((el) => el.kind === "player" && el.side === side).length + 1;
-      const el: BoardElement = { id: uid(), kind: "player", x: p[0], y: p[1], side, label: `${side === "a" ? "" : "D"}${count}`, color: side === "a" ? color : color === "#ffffff" ? "#ff5a5f" : color };
+      const isQb = side === "a" && color === QB_COLOR;
+      const count = elements.filter((el) => el.kind === "player" && el.side === side && el.label !== "QB").length + 1;
+      const label = isQb ? "QB" : `${side === "a" ? "" : "D"}${count}`;
+      const el: BoardElement = { id: uid(), kind: "player", x: p[0], y: p[1], side, label, color: side === "a" ? color : color === "#ffffff" ? "#ff5a5f" : color };
       commit([...elements, el]);
+      return;
+    }
+    if (tool === "ball") {
+      // uma bola por jogada: clicar de novo leva a bola para o novo lugar
+      const ball = elements.find((el) => el.kind === "ball");
+      commit(ball ? elements.map((el) => (el.id === ball.id ? { ...ball, x: p[0], y: p[1] } : el)) : [...elements, { id: uid(), kind: "ball", x: p[0], y: p[1] }]);
       return;
     }
     if (tool === "route") {
@@ -233,7 +242,9 @@ export function BoardEditor({ team, play }: { team: Team; play?: Play }) {
                   title="Cor"
                   onClick={() => {
                     setColor(c);
-                    if (selected) update(selected.id, { color: c });
+                    if (!selected || selected.kind === "ball") return;
+                    if (selected.kind === "player" && selected.side === "a" && c === QB_COLOR) update(selected.id, { color: c, label: "QB" });
+                    else update(selected.id, { color: c });
                   }}
                   className={`size-6 rounded-full border border-white/20 ${color === c ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
                   style={{ background: c }}
@@ -294,7 +305,11 @@ export function BoardEditor({ team, play }: { team: Team; play?: Play }) {
                 : "Clique num jogador (ou no campo) para começar a rota."
               : tool === "select"
                 ? "Arraste para mover. Delete remove o item selecionado. Ctrl+Z desfaz."
-                : "Clique no campo para adicionar."}
+                : tool === "ball"
+                  ? "Clique no campo para posicionar a bola. Jogador do time na cor preta vira o QB."
+                  : tool === "player-a"
+                    ? "Clique no campo para adicionar. Na cor preta, o jogador entra como QB."
+                    : "Clique no campo para adicionar."}
             {draft.length >= 2 && (
               <button type="button" onClick={finishRoute} className="ml-2 font-semibold text-accent hover:underline">
                 Concluir rota
@@ -305,7 +320,7 @@ export function BoardEditor({ team, play }: { team: Team; play?: Play }) {
 
         <aside className="space-y-4">
           {selected && (
-            <Card title={selected.kind === "player" ? "Jogador" : selected.kind === "route" ? "Rota" : "Texto"}>
+            <Card title={{ player: "Jogador", route: "Rota", text: "Texto", ball: "Bola" }[selected.kind]}>
               <div className="space-y-3">
                 {selected.kind === "player" && (
                   <Field label="Rótulo">

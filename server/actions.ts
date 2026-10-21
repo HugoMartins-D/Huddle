@@ -144,6 +144,7 @@ function agendaInput(value: unknown): AgendaItem[] {
 function elementsInput(value: unknown): BoardElement[] {
   if (!Array.isArray(value) || value.length > 2000) throw new UserError("Jogada inválida.");
   return value.map((el) => {
+    if (el?.kind === "ball") return { id: text(el.id, 64), kind: "ball", x: num(el.x), y: num(el.y) };
     const base = { id: text(el?.id, 64), color: text(el?.color ?? "", 32) };
     if (el?.kind === "player")
       return { ...base, kind: "player", x: num(el.x), y: num(el.y), side: oneOf(el.side, ["a", "b"] as const), label: text(el.label ?? "", 12) };

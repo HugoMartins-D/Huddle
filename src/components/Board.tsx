@@ -6,6 +6,32 @@ export const BOARD_H = 600;
 
 export const BOARD_COLORS = ["#ffffff", "#f5d90a", "#ff5a5f", "#4ea1ff", "#3ddc97", "#111111"];
 
+/** Jogador do time na cor preta é o quarterback: recebe o rótulo QB. */
+export const QB_COLOR = "#111111";
+
+/** Bola de futebol americano (flag): oval marrom com costura e faixas brancas. */
+function Football({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(-30) scale(${scale})`}>
+      <ellipse rx={17} ry={10.5} fill="#8a4b22" stroke="#3a1c0b" strokeWidth={2} />
+      <path d="M-11.5 -6.2 Q-10 0 -11.5 6.2 M11.5 -6.2 Q10 0 11.5 6.2" stroke="#ffffff" strokeWidth={2} fill="none" />
+      <line x1={-6} y1={0} x2={6} y2={0} stroke="#ffffff" strokeWidth={1.8} strokeLinecap="round" />
+      {[-4, -1.3, 1.3, 4].map((lx) => (
+        <line key={lx} x1={lx} y1={-2.6} x2={lx} y2={2.6} stroke="#ffffff" strokeWidth={1.5} strokeLinecap="round" />
+      ))}
+    </g>
+  );
+}
+
+/** Ícone da ferramenta Bola, no mesmo formato dos ícones da barra. */
+export function BallIcon({ size = 16 }: { size?: number; strokeWidth?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="-20 -20 40 40" aria-hidden>
+      <Football x={0} y={0} scale={1.05} />
+    </svg>
+  );
+}
+
 export const FIELDS: { value: FieldKind; label: string }[] = [
   { value: "gridiron", label: "Futebol americano / flag" },
   { value: "soccer", label: "Futebol / society" },
@@ -153,6 +179,15 @@ export function ElementShape({
       </g>
     );
   }
+  if (el.kind === "ball") {
+    return (
+      <g onPointerDown={onPointerDown} style={{ cursor }}>
+        {interactive && <circle cx={el.x} cy={el.y} r={22} fill="transparent" />}
+        {selected && <circle cx={el.x} cy={el.y} r={24} fill="none" stroke="#ffffff" strokeWidth={2} strokeDasharray="4 4" />}
+        <Football x={el.x} y={el.y} />
+      </g>
+    );
+  }
   const filled = el.side === "a";
   return (
     <g onPointerDown={onPointerDown} style={{ cursor }}>
@@ -204,7 +239,8 @@ export function BoardSvg({
       {elements.filter((e) => e.kind === "route").map((el) => (
         <ElementShape key={el.id} el={el} selected={el.id === selectedId} onPointerDown={onElementDown && ((e) => onElementDown(el, e))} />
       ))}
-      {elements.filter((e) => e.kind !== "route").map((el) => (
+      {/* rotas embaixo, jogadores e textos no meio, bola por cima */}
+      {[...elements.filter((e) => e.kind !== "route" && e.kind !== "ball"), ...elements.filter((e) => e.kind === "ball")].map((el) => (
         <ElementShape key={el.id} el={el} selected={el.id === selectedId} onPointerDown={onElementDown && ((e) => onElementDown(el, e))} />
       ))}
       {children}
