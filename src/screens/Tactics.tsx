@@ -239,16 +239,18 @@ export function BoardEditor({ team, play }: { team: Team; play?: Play }) {
                 <button
                   key={c}
                   type="button"
-                  title="Cor"
                   onClick={() => {
                     setColor(c);
                     if (!selected || selected.kind === "ball") return;
                     if (selected.kind === "player" && selected.side === "a" && c === QB_COLOR) update(selected.id, { color: c, label: "QB" });
                     else update(selected.id, { color: c });
                   }}
-                  className={`size-6 rounded-full border border-white/20 ${color === c ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
+                  title={c === QB_COLOR ? "QB (quarterback)" : "Cor"}
+                  className={`grid size-6 place-items-center rounded-full border border-white/20 text-[9px] leading-none font-extrabold text-white ${color === c ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
                   style={{ background: c }}
-                />
+                >
+                  {c === QB_COLOR && "QB"}
+                </button>
               ))}
             </div>
             <div className="ml-auto flex items-center gap-1">
