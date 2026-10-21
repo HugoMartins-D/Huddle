@@ -3,18 +3,18 @@ import { GridLayout, LiveKitRoom, MediaDeviceMenu, ParticipantTile, RoomAudioRen
 import { Track } from "livekit-client";
 import "@livekit/components-styles";
 import { Loader2, VideoOff } from "lucide-react";
+import { api } from "../lib/store";
 import type { Meeting, Member } from "../lib/types";
 import { Button } from "./ui";
 
-/** Endereço do servidor LiveKit. Em produção vem de VITE_LIVEKIT_URL (wss://…). */
+/** Endereço do servidor LiveKit. Em produção vem de VITE_LIVEKIT_URL (wss://… — o mesmo endereço da API, que repassa /rtc). */
 const LIVEKIT_URL = (import.meta.env.VITE_LIVEKIT_URL as string | undefined) ?? `ws://${location.hostname}:7880`;
 
-async function fetchToken(meeting: Meeting, me: Member) {
-  const params = new URLSearchParams({ room: meeting.id, identity: me.id, name: me.name, host: me.role === "commission" ? "1" : "0" });
-  const res = await fetch(`/api/livekit/token?${params}`);
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok || !body.token) throw new Error(body.error ?? "Não foi possível obter acesso à sala de vídeo.");
-  return body.token as string;
+/** O servidor confere se a pessoa pode entrar nesta reunião antes de liberar o token. */
+async function fetchToken(meeting: Meeting) {
+  const { token } = await api.livekitToken(meeting.id);
+  if (!token) throw new Error("Não foi possível obter acesso à sala de vídeo.");
+  return token;
 }
 
 function Grid() {
@@ -63,7 +63,7 @@ export function VideoStage({ meeting, me, withCamera, withMic }: { meeting: Meet
   useEffect(() => {
     let cancelled = false;
     setError("");
-    fetchToken(meeting, me)
+    fetchToken(meeting)
       .then((t) => !cancelled && setToken(t))
       .catch((e) => !cancelled && setError(e instanceof Error ? e.message : String(e)));
     return () => {

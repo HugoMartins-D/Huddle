@@ -4,7 +4,6 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 
 import siteConfiguration from './.figma/make/site.json'
-import { livekitTokenPlugin } from './server/livekitToken'
 
 
 // Vite config — https://vitejs.dev/config/
@@ -21,7 +20,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
 react(),
       tailwindcss(),
-      livekitTokenPlugin(),
       figmaSiteConfiguration(siteConfiguration),
       figmaErrorOverlayReplay(),
       figmaReactRefreshBoundaryFallback(),
@@ -36,9 +34,14 @@ react(),
       host: process.env.FIGMA_DEV_SERVER_HOST || '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      // A API do HUDDLE (server/index.ts) roda à parte: `pnpm api`.
+      proxy: {
+        '/api': { target: process.env.HUDDLE_API ?? 'http://127.0.0.1:3400', changeOrigin: true },
+      },
       watch: {
         ignored: [
           '**/.figma/**',
+          '**/server/data/**',
 ],
       },
     },

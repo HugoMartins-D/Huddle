@@ -57,11 +57,3 @@ function Brand() {
     </div>
   );
 }
-
-export function TestModeNote() {
-  return (
-    <p className="mt-8 rounded-xl border border-hud-line bg-hud-surface px-3.5 py-3 text-xs leading-relaxed text-muted">
-      <strong className="text-hud-gold">Modo de teste local.</strong> Os dados ficam salvos só neste navegador e nenhum e-mail é enviado ainda.
-    </p>
-  );
-}

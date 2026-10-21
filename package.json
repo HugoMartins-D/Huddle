@@ -3,8 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "packageManager": "pnpm@10.34.3",
   "scripts": {
     "dev": "vite",
+    "api": "node --watch --env-file-if-exists=server/.env server/index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "format": "oxfmt"

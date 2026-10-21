@@ -1,11 +1,10 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { BookmarkPlus, Clapperboard, Download, Play as PlayIcon, Search, Trash2, X } from "lucide-react";
 import { Badge, Button, Card, Empty, PageHeader, Segmented } from "../components/ui";
-import { blobs } from "../lib/blobs";
 import { fmtClock, fmtDateTime, plural } from "../lib/format";
 import { Link, go } from "../lib/router";
 import { memberName, visibleRecordings } from "../lib/selectors";
-import { api } from "../lib/store";
+import { api, recordingUrl } from "../lib/store";
 import type { Data, Member, Recording } from "../lib/types";
 
 const fmtSize = (bytes: number) => (bytes > 1e9 ? `${(bytes / 1e9).toFixed(1)} GB` : `${Math.max(1, Math.round(bytes / 1e6))} MB`);
@@ -75,25 +74,10 @@ export function RecordingPlayer({ data, me, recording }: { data: Data; me: Membe
   const isCommission = me.role === "commission";
   const meeting = data.meetings.find((m) => m.id === recording.meetingId);
   const video = useRef<HTMLVideoElement>(null);
-  const [url, setUrl] = useState<string | null>(null);
+  const url = recordingUrl(recording.id);
   const [missing, setMissing] = useState(false);
   const [time, setTime] = useState(0);
   const [note, setNote] = useState("");
-
-  useEffect(() => {
-    let objectUrl: string | null = null;
-    blobs
-      .get(recording.id)
-      .then((blob) => {
-        if (!blob) return setMissing(true);
-        objectUrl = URL.createObjectURL(blob);
-        setUrl(objectUrl);
-      })
-      .catch(() => setMissing(true));
-    return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [recording.id]);
 
   // Vídeos gravados pelo navegador (webm) não trazem a duração; forçamos o cálculo para permitir pular entre capítulos.
   function onLoaded() {
@@ -130,8 +114,8 @@ export function RecordingPlayer({ data, me, recording }: { data: Data; me: Membe
         title={meeting?.title ?? "Reunião removida"}
         subtitle={`${fmtDateTime(recording.createdAt)} · ${fmtClock(recording.durationSec)} · gravada por ${memberName(data, recording.createdBy)}`}
         actions={
-          url && (
-            <a className="btn btn-secondary btn-sm" href={url} download={`${meeting?.title ?? "gravacao"}.webm`}>
+          !missing && (
+            <a className="btn btn-secondary btn-sm" href={url} target="_blank" rel="noreferrer" download={`${meeting?.title ?? "gravacao"}.webm`}>
               <Download size={16} /> Baixar
             </a>
           )
@@ -143,12 +127,12 @@ export function RecordingPlayer({ data, me, recording }: { data: Data; me: Membe
             {missing ? (
               <div className="grid aspect-video place-items-center p-6 text-center">
                 <div>
-                  <p className="font-bold">Arquivo indisponível neste aparelho</p>
-                  <p className="mt-1 max-w-md text-sm text-muted">Nesta fase, o vídeo fica salvo no navegador onde foi gravado. Com o servidor, passa a ficar disponível para todos.</p>
+                  <p className="font-bold">Vídeo indisponível</p>
+                  <p className="mt-1 max-w-md text-sm text-muted">Não foi possível carregar o arquivo desta gravação. Confira sua conexão ou peça à comissão para verificar o servidor.</p>
                 </div>
               </div>
             ) : (
-              <video ref={video} src={url ?? undefined} controls className="aspect-video w-full" onLoadedMetadata={onLoaded} onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)} />
+              <video ref={video} src={url} controls onError={() => setMissing(true)} className="aspect-video w-full" onLoadedMetadata={onLoaded} onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)} />
             )}
           </div>
           {currentChapter && (

@@ -1,5 +1,5 @@
 import { ReactNode, useEffect } from "react";
-import { SearchX } from "lucide-react";
+import { Loader2, SearchX } from "lucide-react";
 import { AppShell } from "./components/AppShell";
 import { Button, Card, Empty } from "./components/ui";
 import { go, useRoute } from "./lib/router";
@@ -100,7 +100,7 @@ function routeScreen(segments: string[], data: Data, me: Member, team: Team): { 
 
 export default function App() {
   const segments = useRoute();
-  const { data, me, team } = useSession();
+  const { data, me, team, loading } = useSession();
   const section = segments[0] ?? "";
 
   useEffect(() => {
@@ -109,12 +109,22 @@ export default function App() {
   }, [team?.name, team?.color]);
 
   useEffect(() => {
+    if (loading) return;
     if (!section) go(me ? "/inicio" : "/login");
     else if (!me && !PUBLIC.has(section)) go("/login");
     else if (me && (section === "login" || section === "registrar")) go("/inicio");
-  }, [section, me]);
+  }, [section, me, loading]);
 
   if (section === "convite") return <ActivateInvite key={segments[1]} token={segments[1] ?? ""} />;
+  if (loading) {
+    return (
+      <div className="grid min-h-dvh place-items-center text-sm text-muted">
+        <span className="inline-flex items-center gap-2">
+          <Loader2 className="animate-spin" size={16} /> Carregando…
+        </span>
+      </div>
+    );
+  }
   if (!me || !team) {
     if (section === "registrar") return <RegisterTeam />;
     if (section === "recuperar") return <Recover />;

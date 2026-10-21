@@ -1,8 +1,8 @@
-import { FormEvent, ReactNode, useState } from "react";
-import { ArrowLeft, Check, ImagePlus, KeyRound, Link2, LogIn, Mail, MailCheck, ShieldCheck, TimerOff } from "lucide-react";
-import { AccessLayout, TestModeNote } from "../components/AccessLayout";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
+import { ArrowLeft, Check, ImagePlus, KeyRound, Link2, Loader2, LogIn, Mail, MailCheck, ShieldCheck, TimerOff } from "lucide-react";
+import { AccessLayout } from "../components/AccessLayout";
 import { Button, Crest, ErrorText, Field, ICON, useAction } from "../components/ui";
-import { api } from "../lib/store";
+import { api, type InviteInfo } from "../lib/store";
 import { Link, go } from "../lib/router";
 import { TEAM_COLORS } from "../lib/theme";
 
@@ -111,16 +111,6 @@ export function Login() {
         </Link>
       </p>
 
-      <TestModeNote />
-      <button
-        type="button"
-        className="mt-3 text-xs text-muted/70 underline hover:text-danger"
-        onClick={() => {
-          if (confirm("Apagar todos os dados de teste salvos neste navegador?")) api.resetAll();
-        }}
-      >
-        Apagar dados de teste
-      </button>
     </AccessLayout>
   );
 }
@@ -262,7 +252,41 @@ export function RegisterTeam() {
 // ---------------- Ativar convite ----------------
 
 export function ActivateInvite({ token }: { token: string }) {
-  const invite = api.findInvite(token);
+  const [invite, setInvite] = useState<InviteInfo | null | undefined>(undefined);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .findInvite(token)
+      .then((info) => !cancelled && setInvite(info))
+      .catch((e) => !cancelled && setLoadError(e instanceof Error ? e.message : String(e)));
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
+  if (loadError) {
+    return (
+      <AccessLayout>
+        <Heading title="Não foi possível abrir o convite" text={loadError} />
+        <BackToLogin />
+      </AccessLayout>
+    );
+  }
+  if (invite === undefined) {
+    return (
+      <AccessLayout>
+        <p className="inline-flex items-center gap-2 text-sm text-muted">
+          <Loader2 className="animate-spin" size={16} /> Abrindo convite…
+        </p>
+      </AccessLayout>
+    );
+  }
+  return <InviteForm token={token} invite={invite} />;
+}
+
+function InviteForm({ token, invite }: { token: string; invite: InviteInfo | null }) {
   const [name, setName] = useState(invite?.member.name ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -322,6 +346,9 @@ export function ActivateInvite({ token }: { token: string }) {
 
   return (
     <AccessLayout>
+      {invite.member.status === "active" ? (
+        <Heading eyebrow={invite.team?.name} title="Crie uma nova senha" text="A comissão do seu time gerou este link para você voltar a entrar." />
+      ) : (
       <Heading
         eyebrow="Você foi convidado"
         title="Ative sua conta"
@@ -332,6 +359,7 @@ export function ActivateInvite({ token }: { token: string }) {
           </>
         }
       />
+      )}
       {invite.team && (
         <div className="mb-6 flex items-center gap-3 rounded-2xl border border-line-2 bg-surface-2 p-3.5" style={{ ["--accent" as string]: invite.team.color, ["--on-accent" as string]: "#fff" }}>
           <Crest team={invite.team} size={44} />
@@ -376,31 +404,31 @@ export function ActivateInvite({ token }: { token: string }) {
 export function Recover() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const { busy, error, run } = useAction();
 
   return (
     <AccessLayout>
       {sent ? (
         <>
           <StateIcon icon={MailCheck} />
-          <Heading title="Confira seu e-mail" text="Se houver uma conta com esse e-mail, você receberá instruções para criar uma nova senha." />
-          <p className="text-xs text-muted">No modo de teste local nenhum e-mail é enviado. Se esqueceu a senha de uma conta de teste, peça à comissão um novo convite.</p>
+          <Heading title="Pedido enviado" text="Se houver uma conta com esse e-mail, a comissão técnica do seu time foi avisada e vai te mandar um link para criar uma nova senha." />
         </>
       ) : (
         <>
-          <Heading title="Recuperar acesso" text="Informe o e-mail do seu convite. Enviaremos as instruções para criar uma nova senha." />
+          <Heading title="Recuperar acesso" text="Informe o e-mail da sua conta. A comissão técnica do seu time recebe o pedido e te envia um link para criar uma nova senha." />
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              await api.requestPasswordReset(email);
-              setSent(true);
+              if (await run(() => api.requestPasswordReset(email))) setSent(true);
             }}
             className="space-y-4"
           >
             <Field label="E-mail">
               <input className="input" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" />
             </Field>
-            <Button type="submit" variant="primary" icon={Mail} className="w-full">
-              Enviar instruções
+            <ErrorText>{error}</ErrorText>
+            <Button type="submit" variant="primary" icon={Mail} className="w-full" disabled={busy}>
+              Pedir nova senha
             </Button>
           </form>
           <p className="mt-4 text-xs text-muted">Não tem mais acesso ao e-mail? Peça ajuda à comissão técnica do seu time.</p>

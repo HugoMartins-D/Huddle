@@ -1,4 +1,20 @@
-import type { Data, Meeting, Member } from "./types";
+import type { Audience, Data, Meeting, Member } from "./types";
+
+/*
+ * Funções puras sobre os dados — usadas pelas telas e também pelo servidor (server/),
+ * por isso aqui só entram imports de tipo.
+ */
+
+export function resolveInvited(d: Data, teamId: string, audience: Audience, creatorId: string) {
+  const members = d.members.filter((m) => m.teamId === teamId);
+  let ids: string[];
+  if (audience.kind === "all") ids = members.map((m) => m.id);
+  else if (audience.kind === "commission") ids = members.filter((m) => m.role === "commission").map((m) => m.id);
+  else if (audience.kind === "groups")
+    ids = members.filter((m) => m.groups.some((g) => audience.groups.includes(g))).map((m) => m.id);
+  else ids = audience.memberIds.filter((id) => members.some((m) => m.id === id));
+  return Array.from(new Set([creatorId, ...ids]));
+}
 
 export function teamMembers(data: Data, teamId: string) {
   return data.members.filter((m) => m.teamId === teamId);

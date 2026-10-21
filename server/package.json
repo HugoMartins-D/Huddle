@@ -1,0 +1,9 @@
+{
+  "name": "huddle-api",
+  "private": true,
+  "type": "module",
+  "description": "Dependências da API do HUDDLE dentro do Docker (no desenvolvimento ela usa as do projeto).",
+  "dependencies": {
+    "livekit-server-sdk": "2.19.1"
+  }
+}

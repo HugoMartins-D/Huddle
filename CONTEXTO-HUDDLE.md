@@ -217,9 +217,10 @@ Não há dados de exemplo. Pessoas, reuniões, decisões, tarefas, jogos e núme
 - [x] **Tirar os dados fictícios das páginas originais** (02, 03, 04, 05, 06, 07, 08 e 90) e dos componentes de sidebar/header da página 06.
 - [ ] **Revisar elementos gráficos** que ainda sugerem dados: barras de progresso preenchidas e jogadores posicionados na lousa.
 - [x] **Frontend funcional com dados locais:** registro do time, elenco e convites, reuniões, sala, resumo, ciência, tarefas e notificações.
-- [ ] **Banco de dados e autenticação reais:** trocar `src/lib/store.ts`, incluindo o envio de e-mail de convite e de recuperação de senha.
+- [x] **Banco de dados e autenticação reais:** API própria no ZimaOS (`server/`), SQLite, senhas com scrypt, sessão assinada.
+- [ ] **Envio de e-mail** de convite e de recuperação de senha (hoje a comissão copia o link).
 - [x] **Vídeo ao vivo (LiveKit), gravações, lousa tática e playbook** no frontend.
-- [ ] **Publicar no ZimaOS:** LiveKit em Docker, HTTPS com domínio, token validando a sessão e gravações no armazenamento do servidor.
+- [x] **Publicar no ZimaOS:** API + LiveKit em Docker, HTTPS pelo Tailscale Funnel, token validando a sessão e gravações no disco do servidor. Passo a passo: `server/DEPLOY.md`.
 - [ ] **Definir o cadastro e os dados reais** (time, comissão, atletas, reuniões).
 - [ ] **Definir o que cada time configura** e o que é fixo: unidades (Ataque/Defesa/Ambos), posições, funções da comissão e a lousa (hoje com campo de flag football).
 - [ ] **Conferir a contagem de telas** das páginas 03, 04 e 10 (o inventário lista 22 telas do atleta).
@@ -231,28 +232,29 @@ Não há dados de exemplo. Pessoas, reuniões, decisões, tarefas, jogos e núme
 ## 11. Frontend (código)
 
 - **Stack:** React 19 + Vite + Tailwind v4 + `lucide-react`. Rotas por hash (`#/inicio`, `#/reunioes/:id/sala`…).
-- **Dados:** ainda sem banco. Tudo passa por `src/lib/store.ts` (`api` + `useStore`), que grava no localStorage do navegador. Quando o banco entrar, **só esse arquivo muda**.
-- **Sessão por aba:** cada aba pode estar logada com uma pessoa diferente (comissão numa, atleta na outra), e as abas se sincronizam.
-- **Convites:** sem envio de e-mail por enquanto. Ao cadastrar uma pessoa, o app mostra o link de convite para copiar.
+- **Dados:** as telas falam só com `src/lib/store.ts` (`api` + `useStore`), que chama a API do HUDDLE (`server/`, no ZimaOS). A API guarda tudo num SQLite, aplica as regras de permissão e devolve a cada pessoa só o que ela pode ver. Mudanças chegam ao vivo por `/api/events`.
+- **Sessão por aba:** cada aba pode estar logada com uma pessoa diferente (comissão numa, atleta na outra). A sessão é um token assinado pela API, guardado no sessionStorage.
+- **Convites e senha:** sem envio de e-mail por enquanto. Ao cadastrar uma pessoa, o app mostra o link de convite para copiar. Quem esquece a senha pede em "Recuperar acesso"; a comissão é avisada e gera um link de nova senha na ficha da pessoa (vale uma vez).
 - **Tema:** a cor do time vira `--accent`, e fundos e bordas derivam dela. As telas de acesso usam a marca HUDDLE (classe `.hud`).
 - **Vídeo (próprio, no servidor do time):** usa o LiveKit (open source).
   - A sala tem câmera, microfone, compartilhamento de tela e grade de participantes, além de pauta com cronômetro, chat, pessoas e notas.
-  - O token de acesso é gerado em `server/livekitToken.ts`, que hoje roda como middleware do Vite em `/api/livekit/token`.
-  - O endereço do servidor de vídeo vem de `VITE_LIVEKIT_URL`; o padrão é `ws://<host>:7880`.
+  - O token de acesso é gerado pela API em `/api/livekit/token`, só para quem pode ver a reunião; a comissão administra a sala.
+  - O endereço do servidor de vídeo vem de `VITE_LIVEKIT_URL`; o padrão (local) é `ws://<host>:7880`. Em produção é o mesmo endereço da API, que repassa `/rtc` ao LiveKit.
 - **Gravações:** a comissão grava pelo navegador. A captura pega a aba com o áudio da sala, mais o microfone de quem grava.
   - Cada troca de item da pauta vira um capítulo.
   - O player tem anotações da comissão com tempo marcado e a opção de quem pode assistir (convidados ou time todo).
-  - Nesta fase, o arquivo fica no IndexedDB do navegador que gravou (`src/lib/blobs.ts`).
+  - O arquivo é enviado para a API e fica no disco do ZimaOS (`server/data/recordings`).
 - **Lousa tática e playbook:**
   - A lousa tem campo de futebol americano/flag, futebol, quadra ou em branco; jogadores do time e adversários; rotas contínuas, tracejadas ou de bloqueio; texto, cores, desfazer e refazer.
   - Cada jogada pode ser publicada para grupos específicos.
   - O atleta só consulta.
 - **Protótipo antigo** (exportado do Figma): guardado em `prototipo-figma/`, fora do build.
-- **Rodar local:** use `iniciar-local.ps1`. Se estiver numa pasta de rede, ele mapeia a unidade Y: sozinho; depois abre o LiveKit em modo de desenvolvimento (`%LOCALAPPDATA%\livekit\livekit-server.exe`, chave `devkey`/`secret`) e sobe o app em http://127.0.0.1:5174/.
+- **Rodar local:** use `iniciar-local.ps1`. Se estiver numa pasta de rede, ele mapeia a unidade Y: sozinho; depois abre o LiveKit em modo de desenvolvimento (`%LOCALAPPDATA%\livekit\livekit-server.exe`, chave `devkey`/`secret`), a API (`server/index.ts`, Node 22.18+) e o app em http://127.0.0.1:5174/. No Mac: `pnpm api` num terminal e `pnpm dev` em outro. O banco de teste fica em `~/.huddle-dados` (SQLite não pode ficar em pasta de rede).
 - **No servidor (ZimaOS):**
-  - O LiveKit roda em Docker (`livekit/livekit-server`) com chave e segredo próprios.
-  - Portas: 7880 (sinalização), 7881/TCP e uma faixa UDP para mídia.
-  - **Câmera e microfone só funcionam em HTTPS** (ou em `localhost`), então o acesso pela rede ou pela internet precisa de domínio com certificado e `wss://`.
+  - `server/docker-compose.yml` sobe a API e o LiveKit. O Tailscale Funnel publica a API na porta 8443 (com `/rtc` do LiveKit) e o TURN do LiveKit na 10000; a 443 segue com o Lead Generator.
+  - Sem portas no roteador: todo áudio e vídeo passa pelo TURN (TCP via Funnel). Se a qualidade cair com muitas câmeras, abrir portas UDP (precisa de IP público) ou usar o LiveKit Cloud.
+  - **Câmera e microfone só funcionam em HTTPS** (ou em `localhost`); o Funnel já entrega HTTPS.
+  - Passo a passo completo: `server/DEPLOY.md`.
 - **Pasta na rede:** o Vite não roda direto por caminho UNC (`\\maquina\compartilhamento`). Mapeie uma unidade (`net use Y: \\<maquina>\<compartilhamento>`) e rode `node node_modules/vite/bin/vite.js` a partir de `Y:`. Em pasta de rede o hot reload não funciona: recarregue a página (F5).
 
 ## 12. Notas técnicas (para quem continuar no Figma via Claude)

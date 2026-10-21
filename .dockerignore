@@ -1,0 +1,5 @@
+*
+!server/package.json
+!server/*.ts
+!src/lib/types.ts
+!src/lib/selectors.ts

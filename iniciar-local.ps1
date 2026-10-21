@@ -1,4 +1,4 @@
-# Sobe o HUDDLE para teste local: servidor de vídeo (LiveKit) + app (Vite).
+# Sobe o HUDDLE para teste local: servidor de vídeo (LiveKit) + API + app (Vite).
 # Uso: clique com o botão direito > "Executar com o PowerShell", ou rode .\iniciar-local.ps1
 $ErrorActionPreference = "Stop"
 
@@ -23,9 +23,16 @@ if (-not (Test-Path $livekit)) {
   Start-Process -FilePath $livekit -ArgumentList "--dev", "--bind", "127.0.0.1" -WindowStyle Minimized
 }
 
-Write-Host "App: http://127.0.0.1:5174/  (Ctrl+C para parar)" -ForegroundColor Green
 Set-Location $project
 # Credenciais do LiveKit em modo --dev (só para teste local; em produção use chave e segredo próprios)
 $env:LIVEKIT_API_KEY = "devkey"
 $env:LIVEKIT_API_SECRET = "secret"
+
+# API do HUDDLE (precisa do Node 22.18 ou mais novo). O banco de teste fica em %USERPROFILE%\.huddle-dados.
+$env:SESSION_SECRET = "somente-para-teste-local-0123456789abcdef"
+if (-not (Get-NetTCPConnection -LocalPort 3400 -State Listen -ErrorAction SilentlyContinue)) {
+  Start-Process -FilePath "node" -ArgumentList "server/index.ts" -WorkingDirectory $project -WindowStyle Minimized
+}
+
+Write-Host "App: http://127.0.0.1:5174/  (Ctrl+C para parar)" -ForegroundColor Green
 node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174 --strictPort

@@ -1,0 +1,49 @@
+# HUDDLE no ZimaOS: API (dados, login, gravações) + LiveKit (vídeo).
+#
+#   cd "/DATA/CODE LESS/PROJETOS/HUDDLE/server"
+#   cp .env.example .env   # e preencha
+#   sudo docker compose up -d --build
+#
+# Acesso público pelo Tailscale Funnel (veja DEPLOY.md):
+#   8443  → API (127.0.0.1:3400), que também repassa /rtc ao LiveKit
+#   10000 → TURN do LiveKit (127.0.0.1:5349), por onde passa o áudio e o vídeo
+name: huddle
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      LIVEKIT_INTERNAL_URL: http://livekit:7880
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:3400:3400"
+    depends_on:
+      - livekit
+
+  livekit:
+    image: livekit/livekit-server:v1.13.8
+    restart: unless-stopped
+    environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+      # Sem portas abertas no roteador: a mídia vai pelo TURN, que o Funnel expõe com TLS.
+      # O Funnel cuida do certificado (external_tls) e entrega o tráfego sem criptografia na porta 10000.
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: info
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          use_external_ip: false
+        turn:
+          enabled: true
+          domain: ${PUBLIC_HOST}
+          tls_port: 10000
+          external_tls: true
+          udp_port: 3478
+    ports:
+      - "127.0.0.1:5349:10000"

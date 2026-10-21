@@ -242,8 +242,20 @@ export function MemberForm({ data, me, team, member }: { data: Data; me: Member;
                     </Button>
                   </div>
                 </>
+              ) : new Date(current.inviteExpiresAt).getTime() > Date.now() ? (
+                <>
+                  <p className="text-sm text-muted">Link para criar uma nova senha. Ele vale uma vez só.</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <CopyButton text={inviteLink(current)} />
+                  </div>
+                </>
               ) : (
-                <p className="text-sm text-muted">Conta ativa. A pessoa entra com o próprio e-mail e senha.</p>
+                <>
+                  <p className="text-sm text-muted">Conta ativa. A pessoa entra com o próprio e-mail e senha.</p>
+                  <Button small className="mt-3" onClick={() => api.renewInvite(current.id)}>
+                    Gerar link de nova senha
+                  </Button>
+                </>
               )}
             </Card>
           )}
