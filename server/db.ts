@@ -10,7 +10,7 @@ import { mkdirSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import type { Data, Member } from "../src/lib/types";
+import type { Data, Member, Team } from "../src/lib/types";
 
 /** No Docker é /data. No desenvolvimento fica fora da pasta do projeto: SQLite em pasta de rede (SMB) corrompe. */
 export const DATA_DIR = path.resolve(process.env.DATA_DIR ?? path.join(homedir(), ".huddle-dados"));
@@ -105,4 +105,24 @@ export const recordingPath = (id: string) => path.join(RECORDINGS_DIR, `${id.rep
 
 export function removeRecordingFile(id: string) {
   rmSync(recordingPath(id), { force: true });
+}
+
+const byId = db.prepare("SELECT data FROM docs WHERE collection = 'members' AND id = ?");
+export function findMemberById(id: string) {
+  const row = byId.get(id) as { data: string } | undefined;
+  return row ? (JSON.parse(row.data) as Member) : undefined;
+}
+
+const teamsSummary = db.prepare(`
+  SELECT t.data AS team,
+    (SELECT count(*) FROM docs m WHERE m.collection = 'members' AND m.team_id = t.id) AS members,
+    (SELECT count(*) FROM docs r WHERE r.collection = 'meetings' AND r.team_id = t.id) AS meetings
+  FROM docs t WHERE t.collection = 'teams'
+`);
+/** Todos os times da plataforma, com contagens (para o acesso de administrador). */
+export function listTeams() {
+  return (teamsSummary.all() as { team: string; members: number; meetings: number }[]).map((row) => {
+    const team = JSON.parse(row.team) as Team;
+    return { id: team.id, name: team.name, sport: team.sport, color: team.color, crest: team.crest, createdAt: team.createdAt, members: row.members, meetings: row.meetings };
+  });
 }

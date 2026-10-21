@@ -16,8 +16,8 @@ import { pipeline } from "node:stream/promises";
 import { AccessToken } from "livekit-server-sdk";
 import type { Data, Member, Recording, Team } from "../src/lib/types";
 import { actions, canSeeRecording, commissionOf, newInviteToken, normEmail, notify, now, requireVisibleMeeting, text, uid, UserError, view, type Ctx } from "./actions.ts";
-import { createSession, hashPassword, readSession, verifyPassword } from "./auth.ts";
-import { findMemberByEmail, findMemberByInvite, loadTeam, recordingPath, saveTeam } from "./db.ts";
+import { createSession, hashPassword, readSession, verifyPassword, type Session } from "./auth.ts";
+import { findMemberByEmail, findMemberById, findMemberByInvite, listTeams, loadTeam, recordingPath, saveTeam } from "./db.ts";
 
 const PORT = Number(process.env.PORT ?? 3400);
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY ?? "";
@@ -27,6 +27,8 @@ const ORIGINS = (process.env.ALLOWED_ORIGINS ?? "").split(",").map((o) => o.trim
 const MAX_UPLOAD = Number(process.env.MAX_UPLOAD_MB ?? 4096) * 1024 * 1024;
 const MAX_JSON = 2 * 1024 * 1024;
 const MIN_PASSWORD = 8;
+/** Administradores da plataforma: entram em qualquer time com poderes de comissão. */
+const SUPERADMINS = new Set((process.env.SUPERADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean));
 
 // ---------- versões e atualizações ao vivo ----------
 
@@ -60,6 +62,27 @@ function activeMember(d: Data, memberId: string) {
   return me;
 }
 
+const isSuperadmin = (member: Member | undefined): member is Member => Boolean(member && member.status === "active" && SUPERADMINS.has(member.email));
+
+/**
+ * O administrador da plataforma aparece nos outros times como "Administrador HUDDLE":
+ * comissão naquele time, sem entrar no elenco. A permissão é conferida a cada pedido,
+ * então tirar o e-mail de SUPERADMIN_EMAILS corta o acesso na hora.
+ */
+function adminPresence(home: Member, teamId: string): Member {
+  const { passwordHash: _, ...rest } = home;
+  return { ...rest, teamId, role: "commission", title: "Administrador HUDDLE", position: "", number: "", groups: [] };
+}
+
+/** Quem está agindo neste time: um membro dele ou um administrador da plataforma. */
+function resolveMe(d: Data, session: Session) {
+  const member = d.members.find((m) => m.id === session.memberId && m.status === "active");
+  if (member) return member;
+  const home = findMemberById(session.memberId);
+  if (isSuperadmin(home) && d.teams.length) return adminPresence(home, session.teamId);
+  throw new UserError("Sua sessão expirou. Entre novamente.", 401);
+}
+
 function sessionFrom(req: http.IncomingMessage, url: URL) {
   const header = req.headers.authorization ?? "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : url.searchParams.get("token");
@@ -72,7 +95,15 @@ function emailTaken(email: string) {
   return Boolean(findMemberByEmail(email));
 }
 
-const stateOf = (d: Data, me: Member, teamId: string) => ({ v: versionOf(teamId), memberId: me.id, data: view(d, me) });
+function stateOf(d: Data, me: Member, teamId: string) {
+  const data = view(d, me);
+  // Administradores que agiram neste time (ou a própria pessoa, se for um) aparecem com nome nas telas.
+  const missing = [me, ...[...SUPERADMINS].map((email) => findMemberByEmail(email))]
+    .filter(isSuperadmin)
+    .filter((m) => !data.members.some((x) => x.id === m.id) && (m.id === me.id || JSON.stringify(d).includes(m.id)));
+  for (const m of missing) data.members.push({ ...adminPresence(m, teamId), email: m.id === me.id ? m.email : "", inviteToken: "" });
+  return { v: versionOf(teamId), memberId: me.id, admin: SUPERADMINS.has(me.email), data };
+}
 
 /** Nunca devolve hash de senha, mesmo que uma ação retorne a pessoa inteira. */
 const clean = (value: unknown) => JSON.parse(JSON.stringify(value ?? null, (key, v) => (key === "passwordHash" ? undefined : v)));
@@ -256,7 +287,7 @@ function runAction(req: http.IncomingMessage, url: URL, name: string, args: unkn
   const session = sessionFrom(req, url);
   const after: (() => void)[] = [];
   const out = mutateTeam(session.teamId, (d) => {
-    const me = activeMember(d, session.memberId);
+    const me = resolveMe(d, session);
     const result = actions[name]({ d, me, after, emailTaken }, ...args);
     return { result, d, me };
   });
@@ -266,13 +297,16 @@ function runAction(req: http.IncomingMessage, url: URL, name: string, args: unkn
 
 async function changePassword(req: http.IncomingMessage, url: URL, body: any) {
   const session = sessionFrom(req, url);
-  const me = activeMember(loadTeam(session.teamId), session.memberId);
+  // a senha mora no time de origem (para o administrador, pode ser outro time)
+  const home = findMemberById(session.memberId);
+  if (!home) throw new UserError("Sua sessão expirou. Entre novamente.", 401);
+  const me = activeMember(loadTeam(home.teamId), home.id);
   if (!(await verifyPassword(text(body?.current, 200), me.passwordHash))) throw new UserError("A senha atual está incorreta.");
   const next = text(body?.next, 200);
   if (next.length < MIN_PASSWORD) throw new UserError(`A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`);
   const passwordHash = await hashPassword(next);
-  mutateTeam(session.teamId, (d) => {
-    activeMember(d, session.memberId).passwordHash = passwordHash;
+  mutateTeam(home.teamId, (d) => {
+    activeMember(d, home.id).passwordHash = passwordHash;
   });
 }
 
@@ -291,7 +325,7 @@ async function uploadRecording(req: http.IncomingMessage, url: URL) {
 
   // confere a permissão antes de receber o arquivo
   const before = loadTeam(session.teamId);
-  const me = activeMember(before, session.memberId);
+  const me = resolveMe(before, session);
   if (me.role !== "commission") throw new UserError("Apenas a comissão técnica pode gravar.", 403);
   if (!before.meetings.some((m) => m.id === meetingId)) throw new UserError("Reunião não encontrada.", 404);
 
@@ -314,7 +348,7 @@ async function uploadRecording(req: http.IncomingMessage, url: URL) {
   }
 
   const out = mutateTeam(session.teamId, (d) => {
-    const me = activeMember(d, session.memberId);
+    const me = resolveMe(d, session);
     const recording: Recording = {
       id,
       teamId: me.teamId,
@@ -338,7 +372,7 @@ async function uploadRecording(req: http.IncomingMessage, url: URL) {
 function serveRecording(req: http.IncomingMessage, res: http.ServerResponse, url: URL, id: string) {
   const session = sessionFrom(req, url);
   const d = loadTeam(session.teamId);
-  const me = activeMember(d, session.memberId);
+  const me = resolveMe(d, session);
   const rec = d.recordings.find((r) => r.id === id);
   if (!rec || !canSeeRecording(d, me, rec)) throw new UserError("Gravação não encontrada.", 404);
   const file = recordingPath(rec.id);
@@ -373,7 +407,7 @@ async function livekitToken(req: http.IncomingMessage, url: URL) {
   if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) throw new UserError("Servidor de vídeo não configurado (LIVEKIT_API_KEY / LIVEKIT_API_SECRET).", 500);
   const session = sessionFrom(req, url);
   const d = loadTeam(session.teamId);
-  const me = activeMember(d, session.memberId);
+  const me = resolveMe(d, session);
   const ctx: Ctx = { d, me, after: [], emailTaken };
   const meeting = requireVisibleMeeting(ctx, url.searchParams.get("meetingId"));
   const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, { identity: me.id, name: me.name, ttl: "6h" });
@@ -381,9 +415,24 @@ async function livekitToken(req: http.IncomingMessage, url: URL) {
   return { token: await token.toJwt() };
 }
 
+function requireSuperadmin(req: http.IncomingMessage, url: URL) {
+  const home = findMemberById(sessionFrom(req, url).memberId);
+  if (!isSuperadmin(home)) throw new UserError("Acesso restrito à administração da plataforma.", 403);
+  return home;
+}
+
+/** Nova sessão do administrador dentro do time escolhido. */
+function enterTeam(home: Member, body: any) {
+  const teamId = text(body?.teamId, 64);
+  const d = loadTeam(teamId);
+  if (!d.teams.length) throw new UserError("Time não encontrado.", 404);
+  const session = { memberId: home.id, teamId };
+  return { token: createSession(session), state: stateOf(d, resolveMe(d, session), teamId) };
+}
+
 function subscribe(req: http.IncomingMessage, res: http.ServerResponse, url: URL) {
   const session = sessionFrom(req, url);
-  activeMember(loadTeam(session.teamId), session.memberId);
+  resolveMe(loadTeam(session.teamId), session);
   res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive", "X-Accel-Buffering": "no" });
   res.write(`retry: 3000\ndata: ${JSON.stringify({ v: versionOf(session.teamId) })}\n\n`);
   const set = subscribers.get(session.teamId) ?? new Set();
@@ -442,9 +491,14 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
   if (m === "GET" && p === "/api/state") {
     const session = sessionFrom(req, url);
     const d = loadTeam(session.teamId);
-    return send(res, 200, stateOf(d, activeMember(d, session.memberId), session.teamId));
+    return send(res, 200, stateOf(d, resolveMe(d, session), session.teamId));
   }
   if (m === "GET" && p === "/api/events") return subscribe(req, res, url);
+  if (p === "/api/admin/teams" && m === "GET") {
+    requireSuperadmin(req, url);
+    return send(res, 200, { teams: listTeams() });
+  }
+  if (p === "/api/admin/enter" && m === "POST") return send(res, 200, enterTeam(requireSuperadmin(req, url), await readJson(req)));
   if (m === "POST" && p === "/api/me/password") {
     await changePassword(req, url, await readJson(req));
     return send(res, 200, { ok: true });

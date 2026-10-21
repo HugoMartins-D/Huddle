@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Bell, BookOpen, CalendarDays, CheckSquare, Clapperboard, Home, LogOut, LucideIcon, PenTool, Settings, User, Users } from "lucide-react";
+import { Bell, BookOpen, CalendarDays, CheckSquare, Clapperboard, Home, LogOut, LucideIcon, PenTool, Settings, ShieldCheck, User, Users } from "lucide-react";
 import { api } from "../lib/store";
 import { Link, go } from "../lib/router";
 import { unreadCount } from "../lib/selectors";
@@ -32,8 +32,10 @@ const ATHLETE_NAV: NavItem[] = [
 const COMMISSION_TABS = ["inicio", "reunioes", "tarefas", "elenco", "time"];
 const ATHLETE_TABS = ["inicio", "reunioes", "tarefas", "notificacoes", "perfil"];
 
-export function AppShell({ data, me, team, active, children }: { data: Data; me: Member; team: Team; active: string; children: ReactNode }) {
-  const nav = me.role === "commission" ? COMMISSION_NAV : ATHLETE_NAV;
+const PLATFORM_ITEM: NavItem = { key: "plataforma", label: "Plataforma", to: "/plataforma", icon: ShieldCheck };
+
+export function AppShell({ data, me, team, active, isAdmin, children }: { data: Data; me: Member; team: Team; active: string; isAdmin: boolean; children: ReactNode }) {
+  const nav = [...(me.role === "commission" ? COMMISSION_NAV : ATHLETE_NAV), ...(isAdmin ? [PLATFORM_ITEM] : [])];
   const tabs = (me.role === "commission" ? COMMISSION_TABS : ATHLETE_TABS).map((k) => nav.find((n) => n.key === k)!);
   const unread = unreadCount(data, me);
 
@@ -89,6 +91,11 @@ export function AppShell({ data, me, team, active, children }: { data: Data; me:
           <span className="display truncate text-[15px] uppercase">{team.name}</span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
+          {isAdmin && (
+            <Link to="/plataforma" title="Plataforma" className="grid size-10 place-items-center rounded-xl border border-line-2 bg-surface-2 text-muted hover:text-ink lg:hidden">
+              <ShieldCheck {...ICON} />
+            </Link>
+          )}
           <Link to="/notificacoes" title="Notificações" className="relative grid size-10 place-items-center rounded-xl border border-line-2 bg-surface-2 text-muted hover:text-ink">
             <Bell {...ICON} />
             {unread > 0 && <span className="absolute -top-1 -right-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-on-accent">{unread}</span>}

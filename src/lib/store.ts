@@ -30,7 +30,7 @@ const empty = (): Data => ({
 });
 
 type Session = { token: string; memberId: string };
-type State = { v: number; memberId: string; data: Data };
+type State = { v: number; memberId: string; admin?: boolean; data: Data };
 
 function loadSession(): Session | null {
   try {
@@ -45,17 +45,19 @@ let data = empty();
 let version = -1;
 let session = loadSession();
 let loading = Boolean(session);
-let snapshot = { data, sessionId: session?.memberId ?? null, loading };
+let admin = false;
+let snapshot = { data, sessionId: session?.memberId ?? null, loading, admin };
 const listeners = new Set<() => void>();
 
 function emit() {
-  snapshot = { data, sessionId: session?.memberId ?? null, loading };
+  snapshot = { data, sessionId: session?.memberId ?? null, loading, admin };
   listeners.forEach((listener) => listener());
 }
 
 function applyState(state: State) {
   data = state.data;
   version = state.v;
+  admin = Boolean(state.admin);
   loading = false;
   emit();
 }
@@ -71,6 +73,7 @@ function setSession(next: Session | null) {
   if (!next) {
     data = empty();
     version = -1;
+    admin = false;
     loading = false;
   }
   connectEvents();
@@ -146,10 +149,10 @@ export function useStore() {
 }
 
 export function useSession() {
-  const { data, sessionId, loading } = useStore();
+  const { data, sessionId, loading, admin } = useStore();
   const me = data.members.find((m) => m.id === sessionId && m.status === "active");
   const team = me ? data.teams.find((t) => t.id === me.teamId) : undefined;
-  return { data, me, team, loading };
+  return { data, me, team, loading, isAdmin: admin };
 }
 
 export function inviteLink(member: Member) {
@@ -198,6 +201,8 @@ export type InviteInfo = {
 };
 
 type AuthResult = { token: string; state: State };
+
+export type PlatformTeam = Pick<Team, "id" | "name" | "sport" | "color" | "crest" | "createdAt"> & { members: number; meetings: number };
 
 function startSession(out: AuthResult) {
   setSession({ token: out.token, memberId: out.state.memberId });
@@ -304,6 +309,14 @@ export const api = {
   },
   removeRecordingNote: (id: string, noteId: string) => call("removeRecordingNote", id, noteId),
   deleteRecording: (id: string) => call("deleteRecording", id),
+
+  // ----- administração da plataforma -----
+  async platformTeams() {
+    return (await request<{ teams: PlatformTeam[] }>("/api/admin/teams")).teams;
+  },
+  async enterTeam(teamId: string) {
+    startSession(await post<AuthResult>("/api/admin/enter", { teamId }));
+  },
 
   // ----- vídeo -----
   livekitToken: (meetingId: string) => request<{ token: string }>(`/api/livekit/token?meetingId=${encodeURIComponent(meetingId)}`),

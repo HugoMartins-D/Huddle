@@ -7,6 +7,7 @@ import { useSession } from "./lib/store";
 import { applyTeamColor } from "./lib/theme";
 import type { Data, Member, Team } from "./lib/types";
 import { ActivateInvite, Login, Recover, RegisterTeam } from "./screens/Access";
+import { Platform } from "./screens/Platform";
 import { AthleteHome, CommissionHome } from "./screens/Home";
 import { LiveRoom } from "./screens/LiveRoom";
 import { MeetingDetail, MeetingsList, NewMeeting } from "./screens/Meetings";
@@ -27,7 +28,7 @@ function NotFound({ text = "Esta página não existe ou você não tem acesso a 
   );
 }
 
-function routeScreen(segments: string[], data: Data, me: Member, team: Team): { active: string; screen: ReactNode } {
+function routeScreen(segments: string[], data: Data, me: Member, team: Team, isAdmin: boolean): { active: string; screen: ReactNode } {
   const [section, id, sub] = segments;
   const isCommission = me.role === "commission";
   const commissionOnly = (screen: ReactNode) => (isCommission ? screen : <NotFound />);
@@ -91,6 +92,8 @@ function routeScreen(segments: string[], data: Data, me: Member, team: Team): { 
       return { active: "time", screen: commissionOnly(<TeamSettings key={team.id} team={team} />) };
     case "notificacoes":
       return { active: "notificacoes", screen: <Notifications data={data} me={me} /> };
+    case "plataforma":
+      return { active: "plataforma", screen: isAdmin ? <Platform team={team} /> : <NotFound /> };
     case "perfil":
       return { active: "perfil", screen: <Profile key={me.id} me={me} team={team} /> };
     default:
@@ -100,7 +103,7 @@ function routeScreen(segments: string[], data: Data, me: Member, team: Team): { 
 
 export default function App() {
   const segments = useRoute();
-  const { data, me, team, loading } = useSession();
+  const { data, me, team, loading, isAdmin } = useSession();
   const section = segments[0] ?? "";
 
   useEffect(() => {
@@ -131,9 +134,9 @@ export default function App() {
     return <Login />;
   }
 
-  const { active, screen } = routeScreen(segments, data, me, team);
+  const { active, screen } = routeScreen(segments, data, me, team, isAdmin);
   return (
-    <AppShell data={data} me={me} team={team} active={active}>
+    <AppShell data={data} me={me} team={team} active={active} isAdmin={isAdmin}>
       {screen}
     </AppShell>
   );
