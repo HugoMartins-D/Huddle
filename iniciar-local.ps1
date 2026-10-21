@@ -20,4 +20,7 @@ if (-not (Test-Path $livekit)) {
 
 Write-Host "App: http://127.0.0.1:5174/  (Ctrl+C para parar)" -ForegroundColor Green
 Set-Location $project
+# Credenciais do LiveKit em modo --dev (só para teste local; em produção use chave e segredo próprios)
+$env:LIVEKIT_API_KEY = "devkey"
+$env:LIVEKIT_API_SECRET = "secret"
 node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 5174 --strictPort
