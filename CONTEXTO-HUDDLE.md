@@ -248,12 +248,12 @@ Não há dados de exemplo. Pessoas, reuniões, decisões, tarefas, jogos e núme
   - Cada jogada pode ser publicada para grupos específicos.
   - O atleta só consulta.
 - **Protótipo antigo** (exportado do Figma): guardado em `prototipo-figma/`, fora do build.
-- **Rodar local:** use `iniciar-local.ps1`. Ele mapeia a unidade Y:, abre o LiveKit em modo de desenvolvimento (`%LOCALAPPDATA%\livekit\livekit-server.exe`, chave `devkey`/`secret`) e sobe o app em http://127.0.0.1:5174/.
+- **Rodar local:** use `iniciar-local.ps1`. Se estiver numa pasta de rede, ele mapeia a unidade Y: sozinho; depois abre o LiveKit em modo de desenvolvimento (`%LOCALAPPDATA%\livekit\livekit-server.exe`, chave `devkey`/`secret`) e sobe o app em http://127.0.0.1:5174/.
 - **No servidor (ZimaOS):**
   - O LiveKit roda em Docker (`livekit/livekit-server`) com chave e segredo próprios.
   - Portas: 7880 (sinalização), 7881/TCP e uma faixa UDP para mídia.
   - **Câmera e microfone só funcionam em HTTPS** (ou em `localhost`), então o acesso pela rede ou pela internet precisa de domínio com certificado e `wss://`.
-- **Pasta na rede:** como o projeto está em `\\SERVIDOR`, o Vite não roda direto por caminho UNC. Mapeie uma unidade (`net use Y: \\SERVIDOR\ZimaOS-HD`) e rode `node node_modules/vite/bin/vite.js` a partir de `Y:`. Em pasta de rede o hot reload não funciona: recarregue a página (F5).
+- **Pasta na rede:** o Vite não roda direto por caminho UNC (`\\maquina\compartilhamento`). Mapeie uma unidade (`net use Y: \\<maquina>\<compartilhamento>`) e rode `node node_modules/vite/bin/vite.js` a partir de `Y:`. Em pasta de rede o hot reload não funciona: recarregue a página (F5).
 
 ## 12. Notas técnicas (para quem continuar no Figma via Claude)
 
