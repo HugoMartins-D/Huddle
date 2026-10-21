@@ -17,6 +17,8 @@ export type Member = {
   name: string;
   email: string;
   passwordHash?: string;
+  /** Aumenta a cada troca de senha; sessões com versão antiga deixam de valer (só no servidor). */
+  sessionVersion?: number;
   role: Role;
   /** Função exibida: Presidente, Head Coach, Atleta, Capitão… (texto livre) */
   title: string;

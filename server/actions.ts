@@ -22,8 +22,10 @@ export type Ctx = {
   me: Member;
   /** Executado depois que a gravação no banco deu certo (ex.: apagar arquivo). */
   after: (() => void)[];
-  /** E-mail já usado em qualquer time (o login é global). */
+  /** E-mail já usado em qualquer time (o login é global) ou reservado à administração. */
   emailTaken: (email: string) => boolean;
+  /** Conta da administração da plataforma (SUPERADMIN_EMAILS). */
+  isPlatformAdmin: (member: Member) => boolean;
 };
 
 const INVITE_DAYS = 7;
@@ -79,6 +81,15 @@ function requireMember(d: Data, id: unknown) {
   return member;
 }
 
+/**
+ * Contas da administração da plataforma não podem ser alteradas pela comissão do time
+ * onde estão cadastradas (senão quem é comissão ali tomaria o acesso de administrador).
+ */
+function guardPlatformAdmin(ctx: Ctx, target: Member) {
+  if (target.id !== ctx.me.id && ctx.isPlatformAdmin(target))
+    throw new UserError("Esta conta é da administração da plataforma e não pode ser alterada pelo time.", 403);
+}
+
 function requireRecording(d: Data, id: unknown) {
   const rec = d.recordings.find((r) => r.id === id);
   if (!rec) throw new UserError("Gravação não encontrada.", 404);
@@ -104,9 +115,11 @@ export function view(d: Data, me: Member): Data {
   const meetingIds = new Set(meetings.map((m) => m.id));
   return {
     teams: d.teams.filter((t) => t.id === me.teamId),
-    members: d.members.map(({ passwordHash: _, ...m }) =>
-      isCommission || m.id === me.id ? m : { ...m, email: "", inviteToken: "" },
-    ),
+    members: d.members.map(({ passwordHash: _, sessionVersion: __, ...m }) => {
+      if (!isCommission && m.id !== me.id) return { ...m, email: "", inviteToken: "" };
+      const linkOpen = m.status === "invited" || new Date(m.inviteExpiresAt).getTime() > Date.now();
+      return linkOpen && m.id !== me.id ? m : { ...m, inviteToken: "" };
+    }),
     meetings,
     rsvps: d.rsvps.filter((r) => meetingIds.has(r.meetingId)),
     acks: d.acks.filter((a) => meetingIds.has(a.meetingId)),
@@ -228,6 +241,8 @@ export const actions: Record<string, (ctx: Ctx, ...args: any[]) => unknown> = {
   renewInvite(ctx, memberId: unknown) {
     requireCommission(ctx);
     const member = requireMember(ctx.d, memberId);
+    guardPlatformAdmin(ctx, member);
+    if (ctx.isPlatformAdmin(member)) throw new UserError("A senha da administração da plataforma não é redefinida por link.", 403);
     member.inviteToken = newInviteToken();
     member.inviteExpiresAt = inviteExpiry();
     return member;
@@ -236,6 +251,7 @@ export const actions: Record<string, (ctx: Ctx, ...args: any[]) => unknown> = {
   updateMember(ctx, memberId: unknown, patch: Record<string, unknown>) {
     requireCommission(ctx);
     const member = requireMember(ctx.d, memberId);
+    guardPlatformAdmin(ctx, member);
     if ("name" in patch) member.name = text(patch.name, 80) || member.name;
     if ("title" in patch) member.title = text(patch.title, 60);
     if ("position" in patch) member.position = text(patch.position, 60);
@@ -247,6 +263,7 @@ export const actions: Record<string, (ctx: Ctx, ...args: any[]) => unknown> = {
   removeMember(ctx, memberId: unknown) {
     const me = requireCommission(ctx);
     if (me.id === memberId) throw new UserError("Você não pode remover a si mesmo.");
+    guardPlatformAdmin(ctx, requireMember(ctx.d, memberId));
     ctx.d.members = ctx.d.members.filter((m) => m.id !== memberId);
   },
 

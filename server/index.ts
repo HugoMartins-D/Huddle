@@ -77,23 +77,30 @@ function adminPresence(home: Member, teamId: string): Member {
 /** Quem está agindo neste time: um membro dele ou um administrador da plataforma. */
 function resolveMe(d: Data, session: Session) {
   const member = d.members.find((m) => m.id === session.memberId && m.status === "active");
-  if (member) return member;
-  const home = findMemberById(session.memberId);
-  if (isSuperadmin(home) && d.teams.length) return adminPresence(home, session.teamId);
+  if (member && sessionVersion(member) === session.sv) return member;
+  if (!member) {
+    const home = findMemberById(session.memberId);
+    if (isSuperadmin(home) && sessionVersion(home) === session.sv && d.teams.length) return adminPresence(home, session.teamId);
+  }
   throw new UserError("Sua sessão expirou. Entre novamente.", 401);
 }
 
-function sessionFrom(req: http.IncomingMessage, url: URL) {
+/** Sessão no cabeçalho Authorization; na URL (`?token=`) só onde o navegador não manda cabeçalho (SSE e vídeo). */
+function sessionFrom(req: http.IncomingMessage, url: URL, allowQuery = false) {
   const header = req.headers.authorization ?? "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : url.searchParams.get("token");
+  const token = header.startsWith("Bearer ") ? header.slice(7) : allowQuery ? url.searchParams.get("token") : null;
   const session = readSession(token);
   if (!session) throw new UserError("Sua sessão expirou. Entre novamente.", 401);
   return session;
 }
 
+/** E-mails da administração ficam reservados: ninguém cadastra nem convida com eles. */
 function emailTaken(email: string) {
-  return Boolean(findMemberByEmail(email));
+  return SUPERADMINS.has(email) || Boolean(findMemberByEmail(email));
 }
+
+const sessionVersion = (member: Member) => member.sessionVersion ?? 0;
+const sessionFor = (member: Member, teamId = member.teamId) => createSession({ memberId: member.id, teamId, sv: sessionVersion(member) });
 
 function stateOf(d: Data, me: Member, teamId: string) {
   const data = view(d, me);
@@ -197,11 +204,11 @@ async function register(body: any) {
     d.teams.push(team);
     d.members.push(member);
     // reaproveita a validação de nome, cor e escudo
-    actions.updateTeam({ d, me: member, after: [], emailTaken }, body?.team ?? {});
+    actions.updateTeam({ d, me: member, after: [], emailTaken, isPlatformAdmin: isSuperadmin }, body?.team ?? {});
     if (!team.name) throw new UserError("Informe o nome do time.");
     return member;
   });
-  return { token: createSession({ memberId: member.id, teamId }), state: stateOf(loadTeam(teamId), member, teamId) };
+  return { token: sessionFor(member), state: stateOf(loadTeam(teamId), member, teamId) };
 }
 
 async function login(body: any) {
@@ -215,7 +222,7 @@ async function login(body: any) {
   }
   attempts.delete(email);
   const d = loadTeam(found.teamId);
-  return { token: createSession({ memberId: found.id, teamId: found.teamId }), state: stateOf(d, found, found.teamId) };
+  return { token: sessionFor(found), state: stateOf(d, found, found.teamId) };
 }
 
 function inviteInfo(token: string) {
@@ -246,19 +253,21 @@ async function activateInvite(token: string, body: any) {
     if (!member) throw new UserError("Convite não encontrado.", 404);
     if (new Date(member.inviteExpiresAt).getTime() < Date.now())
       throw new UserError(member.status === "active" ? "Este link já foi usado. Entre com seu e-mail e senha." : "Este convite expirou.");
+    if (SUPERADMINS.has(member.email)) throw new UserError("Este link não vale para esta conta.", 403);
     const firstAccess = member.status === "invited";
     member.name = text(body?.name ?? "", 80) || member.name;
     member.passwordHash = passwordHash;
     member.status = "active";
     member.consentAt ??= now();
     member.inviteExpiresAt = now(); // o link vale uma vez só
+    member.sessionVersion = sessionVersion(member) + 1; // nova senha derruba sessões antigas
     if (firstAccess) {
       const others = commissionOf(d, member.teamId).filter((m) => m.id !== member.id);
       notify(d, others.map((m) => m.id), `${member.name} ativou o acesso.`, `/elenco`);
     }
     return member;
   });
-  return { token: createSession({ memberId: member.id, teamId: member.teamId }), state: stateOf(loadTeam(member.teamId), member, member.teamId) };
+  return { token: sessionFor(member), state: stateOf(loadTeam(member.teamId), member, member.teamId) };
 }
 
 function requestNewInvite(token: string) {
@@ -288,7 +297,7 @@ function runAction(req: http.IncomingMessage, url: URL, name: string, args: unkn
   const after: (() => void)[] = [];
   const out = mutateTeam(session.teamId, (d) => {
     const me = resolveMe(d, session);
-    const result = actions[name]({ d, me, after, emailTaken }, ...args);
+    const result = actions[name]({ d, me, after, emailTaken, isPlatformAdmin: isSuperadmin }, ...args);
     return { result, d, me };
   });
   for (const fn of after) fn();
@@ -301,13 +310,19 @@ async function changePassword(req: http.IncomingMessage, url: URL, body: any) {
   const home = findMemberById(session.memberId);
   if (!home) throw new UserError("Sua sessão expirou. Entre novamente.", 401);
   const me = activeMember(loadTeam(home.teamId), home.id);
+  if (sessionVersion(me) !== session.sv) throw new UserError("Sua sessão expirou. Entre novamente.", 401);
   if (!(await verifyPassword(text(body?.current, 200), me.passwordHash))) throw new UserError("A senha atual está incorreta.");
   const next = text(body?.next, 200);
   if (next.length < MIN_PASSWORD) throw new UserError(`A senha precisa ter pelo menos ${MIN_PASSWORD} caracteres.`);
   const passwordHash = await hashPassword(next);
-  mutateTeam(home.teamId, (d) => {
-    activeMember(d, home.id).passwordHash = passwordHash;
+  // derruba as outras sessões e devolve uma nova para quem trocou a senha continuar logado
+  const updated = mutateTeam(home.teamId, (d) => {
+    const member = activeMember(d, home.id);
+    member.passwordHash = passwordHash;
+    member.sessionVersion = sessionVersion(member) + 1;
+    return member;
   });
+  return { token: sessionFor(updated, session.teamId) };
 }
 
 async function uploadRecording(req: http.IncomingMessage, url: URL) {
@@ -370,7 +385,7 @@ async function uploadRecording(req: http.IncomingMessage, url: URL) {
 
 /** Serve o vídeo com suporte a Range (para o player poder pular no tempo). */
 function serveRecording(req: http.IncomingMessage, res: http.ServerResponse, url: URL, id: string) {
-  const session = sessionFrom(req, url);
+  const session = sessionFrom(req, url, true);
   const d = loadTeam(session.teamId);
   const me = resolveMe(d, session);
   const rec = d.recordings.find((r) => r.id === id);
@@ -408,7 +423,7 @@ async function livekitToken(req: http.IncomingMessage, url: URL) {
   const session = sessionFrom(req, url);
   const d = loadTeam(session.teamId);
   const me = resolveMe(d, session);
-  const ctx: Ctx = { d, me, after: [], emailTaken };
+  const ctx: Ctx = { d, me, after: [], emailTaken, isPlatformAdmin: isSuperadmin };
   const meeting = requireVisibleMeeting(ctx, url.searchParams.get("meetingId"));
   const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, { identity: me.id, name: me.name, ttl: "6h" });
   token.addGrant({ room: meeting.id, roomJoin: true, canPublish: true, canSubscribe: true, canPublishData: true, roomAdmin: me.role === "commission" });
@@ -426,12 +441,12 @@ function enterTeam(home: Member, body: any) {
   const teamId = text(body?.teamId, 64);
   const d = loadTeam(teamId);
   if (!d.teams.length) throw new UserError("Time não encontrado.", 404);
-  const session = { memberId: home.id, teamId };
+  const session = { memberId: home.id, teamId, sv: sessionVersion(home) };
   return { token: createSession(session), state: stateOf(d, resolveMe(d, session), teamId) };
 }
 
 function subscribe(req: http.IncomingMessage, res: http.ServerResponse, url: URL) {
-  const session = sessionFrom(req, url);
+  const session = sessionFrom(req, url, true);
   resolveMe(loadTeam(session.teamId), session);
   res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive", "X-Accel-Buffering": "no" });
   res.write(`retry: 3000\ndata: ${JSON.stringify({ v: versionOf(session.teamId) })}\n\n`);
@@ -500,8 +515,7 @@ async function handle(req: http.IncomingMessage, res: http.ServerResponse) {
   }
   if (p === "/api/admin/enter" && m === "POST") return send(res, 200, enterTeam(requireSuperadmin(req, url), await readJson(req)));
   if (m === "POST" && p === "/api/me/password") {
-    await changePassword(req, url, await readJson(req));
-    return send(res, 200, { ok: true });
+    return send(res, 200, await changePassword(req, url, await readJson(req)));
   }
   const action = /^\/api\/actions\/(\w+)$/.exec(p);
   if (m === "POST" && action) return send(res, 200, runAction(req, url, action[1], await readJson(req)));

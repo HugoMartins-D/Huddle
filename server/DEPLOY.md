@@ -72,6 +72,19 @@ Projeto → Settings → Deployment Protection: deixe **Vercel Authentication de
 | Backup | copiar `server/data/` (com a API parada: `sudo docker compose stop api`) |
 | Funnel caiu | repetir os dois comandos do passo 2 |
 
+## Administração da plataforma
+
+`SUPERADMIN_EMAILS` (no `server/.env`) lista quem pode entrar em qualquer time.
+
+- **Ordem para criar um administrador:** primeiro a pessoa cria a conta normalmente pelo site
+  (Registrar time); depois o e-mail entra em `SUPERADMIN_EMAILS` e a API é reiniciada
+  (`sudo docker compose up -d --force-recreate api`). E-mails da lista ficam reservados: ninguém
+  consegue cadastrá-los nem convidá-los.
+- A conta do administrador não pode ser editada, removida nem receber link de nova senha pela
+  comissão do time onde está cadastrada. Para trocar a senha, use **Meu perfil**; se esquecer,
+  tire o e-mail da lista, gere o link pelo time e coloque o e-mail de volta.
+- Trocar ou redefinir a senha derruba as outras sessões abertas daquela conta.
+
 ## Limites conhecidos
 
 - Todo o áudio e vídeo passa pelo TURN via Funnel (TCP). Funciona sem mexer no roteador,

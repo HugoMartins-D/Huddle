@@ -259,8 +259,10 @@ export const api = {
     call("updateMember", memberId, patch),
   removeMember: (memberId: string) => call("removeMember", memberId),
   updateProfile: (patch: { name: string }) => call("updateProfile", patch),
+  /** O servidor derruba as outras sessões e devolve uma nova para esta aba. */
   async changePassword(current: string, next: string) {
-    await post("/api/me/password", { current, next });
+    const { token } = await post<{ token: string }>("/api/me/password", { current, next });
+    if (session) setSession({ ...session, token });
   },
 
   // ----- reuniões -----
