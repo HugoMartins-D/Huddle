@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Circle, DoorOpen, FileText, LogIn, MessageSquare, NotebookPen, Radio, Send, Square, Users, Video } from "lucide-react";
+import type { Room as VideoRoom } from "livekit-client";
 import { VideoStage } from "../components/VideoStage";
 import { Avatar, Badge, Button, Card, Empty, ErrorText, PageHeader, Toggle, useAction } from "../components/ui";
 import { fmtClock, fmtRange, fmtTime } from "../lib/format";
@@ -123,7 +124,8 @@ function Room({ data, me, meeting, withCamera, withMic }: { data: Data; me: Memb
   const now = useNow();
   const [tab, setTab] = useState<"chat" | "people" | "notes">("chat");
   const { busy, run } = useAction();
-  const recorder = useRecorder(meeting);
+  const [videoRoom, setVideoRoom] = useState<VideoRoom | null>(null);
+  const recorder = useRecorder(meeting, videoRoom);
 
   const elapsed = meeting.startedAt ? (now - new Date(meeting.startedAt).getTime()) / 1000 : 0;
   const item = meeting.agenda[meeting.currentItem];
@@ -157,7 +159,7 @@ function Room({ data, me, meeting, withCamera, withMic }: { data: Data; me: Memb
               </Button>
             ) : (
               <Button icon={Circle} disabled={recorder.state !== "idle"} onClick={() => recorder.start()}>
-                {recorder.state === "saving" ? "Salvando gravação…" : recorder.state === "starting" ? "Escolha a aba…" : "Gravar"}
+                {recorder.state === "saving" ? "Salvando gravação…" : recorder.state === "starting" ? "Iniciando…" : "Gravar"}
               </Button>
             )
           )}
@@ -186,7 +188,7 @@ function Room({ data, me, meeting, withCamera, withMic }: { data: Data; me: Memb
         <div className="space-y-5">
           {recorder.error && <ErrorText>{recorder.error}</ErrorText>}
           <section className="card h-[min(62vh,560px)] min-h-[340px] w-full overflow-hidden">
-            <VideoStage meeting={meeting} me={me} withCamera={withCamera} withMic={withMic} />
+            <VideoStage meeting={meeting} me={me} withCamera={withCamera} withMic={withMic} onRoom={setVideoRoom} />
           </section>
 
           <Card title="Pauta" action={meeting.agenda.length > 0 && <span className="text-xs text-muted">Item {meeting.currentItem + 1} de {meeting.agenda.length}</span>}>

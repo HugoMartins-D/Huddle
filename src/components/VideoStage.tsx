@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { GridLayout, LiveKitRoom, MediaDeviceMenu, ParticipantTile, RoomAudioRenderer, TrackToggle, useTracks } from "@livekit/components-react";
-import { Track } from "livekit-client";
+import { GridLayout, LiveKitRoom, MediaDeviceMenu, ParticipantTile, RoomAudioRenderer, TrackToggle, useRoomContext, useTracks } from "@livekit/components-react";
+import { Track, type Room } from "livekit-client";
 import "@livekit/components-styles";
 import { Loader2, VideoOff } from "lucide-react";
 import { api } from "../lib/store";
@@ -15,6 +15,16 @@ async function fetchToken(meeting: Meeting) {
   const { token } = await api.livekitToken(meeting.id);
   if (!token) throw new Error("Não foi possível obter acesso à sala de vídeo.");
   return token;
+}
+
+/** Entrega a sala conectada para quem está fora do LiveKitRoom (a gravação). */
+function RoomBridge({ onRoom }: { onRoom: (room: Room | null) => void }) {
+  const room = useRoomContext();
+  useEffect(() => {
+    onRoom(room);
+    return () => onRoom(null);
+  }, [room]);
+  return null;
 }
 
 function Grid() {
@@ -55,7 +65,19 @@ function Controls() {
   );
 }
 
-export function VideoStage({ meeting, me, withCamera, withMic }: { meeting: Meeting; me: Member; withCamera: boolean; withMic: boolean }) {
+export function VideoStage({
+  meeting,
+  me,
+  withCamera,
+  withMic,
+  onRoom,
+}: {
+  meeting: Meeting;
+  me: Member;
+  withCamera: boolean;
+  withMic: boolean;
+  onRoom?: (room: Room | null) => void;
+}) {
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -108,6 +130,7 @@ export function VideoStage({ meeting, me, withCamera, withMic }: { meeting: Meet
       onError={(e) => setError(e.message)}
       onMediaDeviceFailure={() => undefined}
     >
+      {onRoom && <RoomBridge onRoom={onRoom} />}
       <Grid />
       <RoomAudioRenderer />
       <Controls />

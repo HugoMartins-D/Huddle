@@ -240,7 +240,7 @@ Não há dados de exemplo. Pessoas, reuniões, decisões, tarefas, jogos e núme
   - A sala tem câmera, microfone, compartilhamento de tela e grade de participantes, além de pauta com cronômetro, chat, pessoas e notas.
   - O token de acesso é gerado pela API em `/api/livekit/token`, só para quem pode ver a reunião; a comissão administra a sala.
   - O endereço do servidor de vídeo vem de `VITE_LIVEKIT_URL`; o padrão (local) é `ws://<host>:7880`. Em produção é o mesmo endereço da API, que repassa `/rtc` ao LiveKit.
-- **Gravações:** a comissão grava pelo navegador. A captura pega a aba com o áudio da sala, mais o microfone de quem grava.
+- **Gravações:** a comissão grava pelo navegador só o que é transmitido: as câmeras e telas compartilhadas da sala, montadas num vídeo 1280×720 (tela compartilhada em destaque), e o áudio de todos os participantes. Sem o painel do HUDDLE.
   - Cada troca de item da pauta vira um capítulo.
   - O player tem anotações da comissão com tempo marcado e a opção de quem pode assistir (convidados ou time todo).
   - O arquivo é enviado para a API e fica no disco do ZimaOS (`server/data/recordings`).
