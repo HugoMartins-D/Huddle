@@ -22,3 +22,5 @@ logs/
 .pnpm-store/
 server/data/
 !server/.env.example
+# arquivos temporários do macOS em pasta de rede (SMB)
+.smbdelete*
