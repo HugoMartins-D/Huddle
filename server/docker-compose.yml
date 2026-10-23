@@ -45,5 +45,18 @@ services:
           tls_port: 10000
           external_tls: true
           udp_port: 3478
+          # O TURN recusa repassar mídia para IPs privados — inclusive o do próprio LiveKit,
+          # que é o único destino necessário aqui. Liberamos só esse IP (fixo, abaixo).
+          allow_restricted_peer_cidrs:
+            - 172.31.250.10/32
     ports:
       - "127.0.0.1:5349:10000"
+    networks:
+      default:
+        ipv4_address: 172.31.250.10
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.31.250.0/24

@@ -85,6 +85,15 @@ Projeto → Settings → Deployment Protection: deixe **Vercel Authentication de
   tire o e-mail da lista, gere o link pelo time e coloque o e-mail de volta.
 - Trocar ou redefinir a senha derruba as outras sessões abertas daquela conta.
 
+## Vídeo: dois detalhes do TURN
+
+- **Porta do TURN:** com `external_tls`, o LiveKit sempre anuncia o TURN como `turns:<domínio>:443`. Como a 443
+  é do Lead Generator, o app troca para a 10000 antes de conectar (`VITE_TURN_TLS_PORT`, padrão `10000`
+  em produção; veja `src/components/VideoStage.tsx`).
+- **Repasse para IP privado:** o TURN do LiveKit recusa repassar mídia para IPs privados, inclusive o do próprio
+  LiveKit. Por isso o contêiner tem IP fixo (`172.31.250.10`) e só esse IP está em `allow_restricted_peer_cidrs`.
+  Mudar a rede exige `sudo docker compose down` antes do `up`.
+
 ## Limites conhecidos
 
 - Todo o áudio e vídeo passa pelo TURN via Funnel (TCP). Funciona sem mexer no roteador,

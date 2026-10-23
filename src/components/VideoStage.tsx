@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { GridLayout, LiveKitRoom, MediaDeviceMenu, ParticipantTile, RoomAudioRenderer, TrackToggle, useRoomContext, useTracks } from "@livekit/components-react";
 import { Track, type Room } from "livekit-client";
 import "@livekit/components-styles";
@@ -9,6 +9,33 @@ import { Button } from "./ui";
 
 /** Endereço do servidor LiveKit. Em produção vem de VITE_LIVEKIT_URL (wss://… — o mesmo endereço da API, que repassa /rtc). */
 const LIVEKIT_URL = (import.meta.env.VITE_LIVEKIT_URL as string | undefined) ?? `ws://${location.hostname}:7880`;
+
+/*
+ * Com `turn.external_tls`, o LiveKit sempre anuncia o TURN em `turns:<domínio>:443`.
+ * No ZimaOS a 443 é de outro serviço e o Funnel expõe o TURN na 10000, então o
+ * navegador precisa trocar a porta antes de conectar (as credenciais continuam as do LiveKit).
+ */
+const TURN_TLS_PORT = (import.meta.env.VITE_TURN_TLS_PORT as string | undefined) ?? (LIVEKIT_URL.startsWith("wss:") ? "10000" : "");
+
+function patchTurnPort() {
+  const w = window as typeof window & { __huddleTurnPatched?: boolean };
+  if (!TURN_TLS_PORT || TURN_TLS_PORT === "443" || w.__huddleTurnPatched) return;
+  w.__huddleTurnPatched = true;
+  const host = new URL(LIVEKIT_URL.replace(/^ws/, "http")).hostname;
+  const fix = (url: string) => url.replace(`turns:${host}:443`, `turns:${host}:${TURN_TLS_PORT}`);
+  const fixConfig = (config?: RTCConfiguration) =>
+    config && { ...config, iceServers: config.iceServers?.map((s) => ({ ...s, urls: Array.isArray(s.urls) ? s.urls.map(fix) : fix(s.urls) })) };
+  const Native = window.RTCPeerConnection;
+  window.RTCPeerConnection = class extends Native {
+    constructor(config?: RTCConfiguration) {
+      super(fixConfig(config));
+    }
+    setConfiguration(config?: RTCConfiguration) {
+      return super.setConfiguration(fixConfig(config));
+    }
+  };
+}
+patchTurnPort();
 
 /** O servidor confere se a pessoa pode entrar nesta reunião antes de liberar o token. */
 async function fetchToken(meeting: Meeting) {
@@ -65,7 +92,9 @@ function Controls() {
   );
 }
 
-export function VideoStage({
+const ignoreDeviceFailure = () => undefined;
+
+export const VideoStage = memo(function VideoStage({
   meeting,
   me,
   withCamera,
@@ -81,6 +110,10 @@ export function VideoStage({
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  // O LiveKitRoom reconecta sempre que onError muda; precisa ser estável (a sala re-renderiza a cada segundo).
+  const onError = useCallback((e: Error) => {
+    setError(/pc connection/i.test(e.message) ? "A sala abriu, mas o áudio e o vídeo não conseguiram conectar (rede ou servidor TURN)." : e.message);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -127,8 +160,8 @@ export function VideoStage({
       audio={withMic}
       data-lk-theme="default"
       style={{ height: "100%", background: "transparent" }}
-      onError={(e) => setError(e.message)}
-      onMediaDeviceFailure={() => undefined}
+      onError={onError}
+      onMediaDeviceFailure={ignoreDeviceFailure}
     >
       {onRoom && <RoomBridge onRoom={onRoom} />}
       <Grid />
@@ -136,4 +169,4 @@ export function VideoStage({
       <Controls />
     </LiveKitRoom>
   );
-}
+});
