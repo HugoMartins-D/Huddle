@@ -94,6 +94,20 @@ function Controls() {
 
 const ignoreDeviceFailure = () => undefined;
 
+const DEVICE_ERRORS = ["NotFoundError", "NotAllowedError", "NotReadableError", "OverconstrainedError", "SecurityError", "AbortError"];
+
+function isDeviceError(e: Error) {
+  return DEVICE_ERRORS.includes(e.name) || /requested device|permission denied|could not start (video|audio) source/i.test(e.message);
+}
+
+function deviceMessage(e: Error) {
+  if (e.name === "NotAllowedError" || e.name === "SecurityError" || /permission/i.test(e.message))
+    return "O navegador bloqueou a câmera ou o microfone. Libere no cadeado ao lado do endereço do site e use os controles abaixo.";
+  if (e.name === "NotReadableError" || /could not start/i.test(e.message))
+    return "A câmera ou o microfone está em uso por outro programa. Feche-o e ligue de novo pelos controles abaixo.";
+  return "Nenhuma câmera (ou microfone) encontrada. Você está na sala com o que estiver disponível.";
+}
+
 export const VideoStage = memo(function VideoStage({
   meeting,
   me,
@@ -110,8 +124,12 @@ export const VideoStage = memo(function VideoStage({
   const [token, setToken] = useState("");
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [notice, setNotice] = useState("");
   // O LiveKitRoom reconecta sempre que onError muda; precisa ser estável (a sala re-renderiza a cada segundo).
+  // Ele também usa onError para falhas de câmera/microfone: essas viram só um aviso, sem derrubar a sala.
   const onError = useCallback((e: Error) => {
+    if (isDeviceError(e)) return setNotice(deviceMessage(e));
+    if (/client initiated/i.test(e.message)) return; // desconexão nossa (saída da tela)
     setError(/pc connection/i.test(e.message) ? "A sala abriu, mas o áudio e o vídeo não conseguiram conectar (rede ou servidor TURN)." : e.message);
   }, []);
 
@@ -159,11 +177,19 @@ export const VideoStage = memo(function VideoStage({
       video={withCamera}
       audio={withMic}
       data-lk-theme="default"
-      style={{ height: "100%", background: "transparent" }}
+      style={{ height: "100%", background: "transparent", position: "relative" }}
       onError={onError}
       onMediaDeviceFailure={ignoreDeviceFailure}
     >
       {onRoom && <RoomBridge onRoom={onRoom} />}
+      {notice && (
+        <div className="absolute inset-x-3 top-3 z-10 flex items-start gap-2 rounded-xl border border-warn/40 bg-black/70 px-3.5 py-2.5 text-xs text-ink backdrop-blur">
+          <span className="flex-1">{notice}</span>
+          <button type="button" className="text-muted hover:text-ink" onClick={() => setNotice("")} aria-label="Fechar aviso">
+            ✕
+          </button>
+        </div>
+      )}
       <Grid />
       <RoomAudioRenderer />
       <Controls />
