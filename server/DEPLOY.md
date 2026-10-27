@@ -72,6 +72,24 @@ Projeto → Settings → Deployment Protection: deixe **Vercel Authentication de
 | Backup | copiar `server/data/` (com a API parada: `sudo docker compose stop api`) |
 | Funnel caiu | repetir os dois comandos do passo 2 |
 
+## Se o servidor cair
+
+Já aconteceu de o ZimaOS reiniciar e o Docker não religar os containers. Três proteções:
+
+1. `restart: always` e healthcheck da API no `docker-compose.yml`.
+2. **Vigia no cron do ZimaOS** (fora do Docker) — instalar uma vez com `sudo crontab -e`:
+   ```
+   */2 * * * * sh "/DATA/CODE LESS/PROJETOS/HUDDLE/server/scripts/watchdog.sh"
+   @reboot sleep 90 && sh "/DATA/CODE LESS/PROJETOS/HUDDLE/server/scripts/watchdog.sh"
+   ```
+   Se a API não responder, ele roda `docker compose up -d`. Log: `server/data/watchdog.log`.
+3. **Monitor no GitHub** (`.github/workflows/monitor.yml`): testa o endereço público a cada 15 min e
+   manda e-mail se falhar. O GitHub desliga agendamentos de repositórios sem commits há 60 dias —
+   nesse caso, reative em Actions → Monitor do servidor.
+
+Diagnóstico rápido: `https://servidor.tail39f8dc.ts.net:8443/api/health` com **502** = Tailscale ok,
+container parado → `sudo docker compose up -d` aqui na pasta `server/`.
+
 ## Administração da plataforma
 
 `SUPERADMIN_EMAILS` (no `server/.env`) lista quem pode entrar em qualquer time.

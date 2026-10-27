@@ -1,0 +1,26 @@
+# Monitor do HUDDLE: testa o servidor público a cada 15 minutos.
+# Se falhar, o GitHub manda e-mail (falha de workflow agendado vai para quem mexeu por último no agendamento).
+name: Monitor do servidor
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: API do HUDDLE (ZimaOS via Tailscale Funnel)
+        run: |
+          for i in 1 2 3; do
+            if curl -fsS -m 15 https://servidor.tail39f8dc.ts.net:8443/api/health; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::A API do HUDDLE não responde. No ZimaOS: cd \"/DATA/CODE LESS/PROJETOS/HUDDLE/server\" && sudo docker compose up -d"
+          exit 1
+      - name: Site na Vercel
+        run: curl -fsS -m 15 -o /dev/null https://huddle-sable.vercel.app/

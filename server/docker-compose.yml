@@ -14,7 +14,9 @@ services:
     build:
       context: ..
       dockerfile: server/Dockerfile
-    restart: unless-stopped
+    # always (e não unless-stopped): no ZimaOS os containers já ficaram parados depois de um reboot.
+    # Mesmo assim, o vigia scripts/watchdog.sh (cron do ZimaOS) religa tudo se a API não responder.
+    restart: always
     env_file: .env
     environment:
       LIVEKIT_INTERNAL_URL: http://livekit:7880
@@ -24,10 +26,16 @@ services:
       - "127.0.0.1:3400:3400"
     depends_on:
       - livekit
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3400/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   livekit:
     image: livekit/livekit-server:v1.13.8
-    restart: unless-stopped
+    restart: always
     environment:
       LIVEKIT_KEYS: "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
       # Sem portas abertas no roteador: a mídia vai pelo TURN, que o Funnel expõe com TLS.
